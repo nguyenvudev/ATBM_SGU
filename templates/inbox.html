@@ -1,0 +1,101 @@
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hộp Thư Đến</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #343a40;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ced4da;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+        }
+        .form-control {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Hộp Thư Đến</h1>
+<form method="GET" action="{{ url_for('inbox') }}">
+    <input type="text" name="search" placeholder="Tìm kiếm theo người gửi hoặc chủ đề" class="form-control" style="max-width: 400px; display: inline-block;">
+    <button type="submit">Tìm kiếm</button>
+</form>
+<table>
+    <tr>
+        <th>Người gửi</th>
+        <th>Chủ đề</th>
+        <th>Thời gian</th>
+        <th>Hành động</th>
+    </tr>
+    {% for email in emails %}
+    <tr>
+        <td>{{ email.sender_email }}</td>
+        <td>{{ email.subject }}</td>
+        <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>
+            <a href="{{ url_for('decrypt_email', email_id=email.id) }}">Giải mã</a>
+<!--            {% if email.attachment %}-->
+<!--                <a href="{{ url_for('download_attachment', email_id=email.id) }}">Tải file đính kèm</a>-->
+<!--            {% endif %}-->
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<h1>Soạn Email</h1>
+<form method="POST" action="{{ url_for('send_email') }}" enctype="multipart/form-data">
+    <label for="recipient">Người nhận:</label>
+    <input type="email" id="recipient" name="recipient" class="form-control" required>
+
+    <label for="subject">Chủ đề:</label>
+    <input type="text" id="subject" name="subject" class="form-control" required>
+
+    <label for="body">Nội dung:</label>
+    <textarea id="body" name="body" class="form-control" required></textarea>
+
+    <label for="attachment">File đính kèm:</label>
+    <input type="file" id="attachment" name="attachment" class="form-control">
+
+    <button type="submit">Gửi Email</button>
+</form>
+
+
+</body>
+</html>
+

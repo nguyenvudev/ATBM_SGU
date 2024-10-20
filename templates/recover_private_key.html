@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khôi Phục Khóa Riêng Tư</title>
+</head>
+<body>
+    <h1>Khôi Phục Khóa Riêng Tư</h1>
+    <form method="POST">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Khôi phục khóa riêng tư</button>
+    </form>
+    <a href="{{ url_for('login') }}">Đã có tài khoản? Đăng nhập</a>
+</body>
+</html>

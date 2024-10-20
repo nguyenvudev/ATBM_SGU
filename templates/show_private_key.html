@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khóa Riêng Tư</title>
+</head>
+<body>
+    <h1>Đăng ký thành công!</h1>
+    <p>Vui lòng lưu khóa bí mật của bạn:</p>
+    <textarea rows="10" cols="70">{{ pem_private }}</textarea>
+    <br><br>
+    <a href="{{ url_for('login') }}">
+        <button>Quay về trang đăng nhập</button>
+    </a>
+</body>
+</html>

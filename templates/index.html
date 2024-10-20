@@ -1,0 +1,142 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Trang Chủ</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Chào mừng đến với Hệ thống Email Mã hóa</h1>-->
+<!--    <a href="{{ url_for('register') }}">Đăng ký</a> |-->
+<!--    <a href="{{ url_for('login') }}">Đăng nhập</a>-->
+<!--</body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Template</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: white;
+            /* display: flex; */
+            justify-content: center;
+            height: 100vh;
+            /* background-image: url('../img/bgpjpg.jpg');
+            background-size: auto 100%;
+            background-position: right center;
+            background-repeat: no-repeat; */
+        }
+
+        .container {
+            width: 100%;
+            /* max-width: 1200px; */
+            text-align: left;
+            height: 90%;
+            background-image: url('../img/bgpjpg.jpg');
+            background-size: auto 90%; /* Fit the height of the screen while maintaining aspect ratio */
+            background-position: right center;
+            background-repeat: no-repeat;
+        }
+
+        header {
+            display: flex;
+            /* width: 100%; */
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+            height: 5vh;
+            padding: 1.5vh 2vh;
+            background-color: #4a33bc;
+            color: white;
+
+        }
+
+        header .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        header .menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu .btn {
+            background-color: rgb(23, 17, 111);
+            width: 90px;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 4px;
+            color: white;
+            padding: 7px 10px;
+        }
+
+        .hero-section {
+            color: black;
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            gap: 20px;
+            height: 90%;
+            margin-left: 10vh;
+        }
+
+        .hero-section .text-content {
+            max-width: 500px;
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .hero-section p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .hero-section .cta-button {
+            background-color: #7356FF;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">YOU LOGO</div>
+        <div class="menu">
+
+            <a href="{{ url_for('register') }}" class="btn">Đăng ký</a>
+             <a href="{{ url_for('login') }}" class="btn">Đăng nhập</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section class="hero-section">
+            <div class="text-content">
+                <h1>LANDING PAGE WEBSITE DESIGN TEMPLATE</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna.</p>
+<!--                <a href="#" class="cta-button">Get started</a>-->
+                <a href="{{ url_for('login') }}" class="cta-button">Get started</a>
+            </div>
+            <!-- <div class="image-placeholder">
+                <img src="../img/bgpjpg.jpg" alt="Image ">
+            </div> -->
+        </section>
+    </div>
+
+</body>
+</html>
