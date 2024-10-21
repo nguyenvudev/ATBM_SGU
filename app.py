@@ -41,7 +41,50 @@ def index():
 
 
 from flask import send_file
+# import os
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if request.method == 'POST':
+#         email = request.form['email']
+#         username = request.form['username']
+#         password = request.form['password']
+#
+#         existing_user = User.query.filter_by(email=email).first()
+#         if existing_user:
+#             return "Email đã được sử dụng. Vui lòng chọn một email khác."
+#
+#         # Kiểm tra tên người dùng có bị trùng không
+#         existing_username = User.query.filter_by(username=username).first()
+#         if existing_username:
+#             return "Tên người dùng đã được sử dụng. Vui lòng chọn một tên khác."
+#
+#         # Băm mật khẩu trước khi lưu
+#         hashed_password = generate_password_hash(password)
+#
+#         private_key, public_key = generate_keys()
+#         pem_private, pem_public = serialize_keys(private_key, public_key)
+#
+#         user = User(email=email, username=username, password=hashed_password, public_key=pem_public,
+#                     private_key=pem_private)
+#         db.session.add(user)
+#         db.session.commit()
+#
+#         # Lưu khóa riêng vào file
+#         private_key_filename = f"private_key_{email}.pem"
+#         os.makedirs(private_key_filename, exist_ok=True)
+#         with open(private_key_filename, 'w') as f:
+#             f.write(pem_private)
+#
+#         # Gửi file khóa riêng cho người dùng
+#         return send_file(private_key_filename, as_attachment=True)
+#
+#
+#     return render_template('register.html')
+
+
 import os
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -69,12 +112,18 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        # Lưu khóa riêng vào file
-        private_key_filename = f"private_key_{email}.pem"
+        # Đường dẫn thư mục lưu khóa riêng tư
+        private_key_dir = 'private_keys'
+        os.makedirs(private_key_dir, exist_ok=True)  # Tạo thư mục nếu chưa tồn tại
+
+        # Đường dẫn đầy đủ tới file khóa riêng tư
+        private_key_filename = os.path.join(private_key_dir, f"private_key_{email}.pem")
+
+        # Lưu khóa riêng vào file trong thư mục đã chỉ định
         with open(private_key_filename, 'w') as f:
             f.write(pem_private)
 
-        # Gửi file khóa riêng cho người dùng
+        # Gửi file khóa riêng tư cho người dùng
         return send_file(private_key_filename, as_attachment=True)
 
     return render_template('register.html')
