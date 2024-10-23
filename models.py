@@ -21,3 +21,5 @@ class EncryptedEmail(db.Model):
     signature = db.Column(db.Text, nullable=False)
     attachment = db.Column(db.String(255), nullable=True)  # Add this line
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    encrypted_attachment_content = db.Column(db.Text, nullable=True)
+    # image = db.Column(db.String, nullable=True)  # Add this line for image support

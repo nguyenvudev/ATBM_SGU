@@ -1,101 +1,411 @@
+    <!--<!DOCTYPE html>-->
+    <!--<html lang="vi">-->
+    <!--<head>-->
+    <!--    <meta charset="UTF-8">-->
+    <!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <!--    <title>Hộp Thư Đến</title>-->
+    <!--    <style>-->
+    <!--        body {-->
+    <!--            font-family: Arial, sans-serif;-->
+    <!--            margin: 20px;-->
+    <!--            background-color: #f8f9fa;-->
+    <!--        }-->
+    <!--        h1 {-->
+    <!--            color: #343a40;-->
+    <!--        }-->
+    <!--        table {-->
+    <!--            width: 100%;-->
+    <!--            border-collapse: collapse;-->
+    <!--            margin-bottom: 20px;-->
+    <!--        }-->
+    <!--        th, td {-->
+    <!--            border: 1px solid #ced4da;-->
+    <!--            padding: 10px;-->
+    <!--            text-align: left;-->
+    <!--        }-->
+    <!--        th {-->
+    <!--            background-color: #e9ecef;-->
+    <!--        }-->
+    <!--        .form-control {-->
+    <!--            width: 100%;-->
+    <!--            max-width: 600px;-->
+    <!--            padding: 10px;-->
+    <!--            margin-bottom: 10px;-->
+    <!--            border: 1px solid #ced4da;-->
+    <!--            border-radius: 5px;-->
+    <!--        }-->
+    <!--        button {-->
+    <!--            padding: 10px 15px;-->
+    <!--            border: none;-->
+    <!--            border-radius: 5px;-->
+    <!--            background-color: #007bff;-->
+    <!--            color: white;-->
+    <!--            cursor: pointer;-->
+    <!--        }-->
+    <!--        button:hover {-->
+    <!--            background-color: #0056b3;-->
+    <!--        }-->
+    <!--    </style>-->
+    <!--</head>-->
+    <!--<body>-->
+
+    <!--<h1>Hộp Thư Đến</h1>-->
+    <!--<form method="GET" action="{{ url_for('inbox') }}">-->
+    <!--    <input type="text" name="search" placeholder="Tìm kiếm theo người gửi hoặc chủ đề" class="form-control" style="max-width: 400px; display: inline-block;">-->
+    <!--    <button type="submit">Tìm kiếm</button>-->
+    <!--</form>-->
+    <!--<table>-->
+    <!--    <tr>-->
+    <!--        <th>Người gửi</th>-->
+    <!--        <th>Chủ đề</th>-->
+    <!--        <th>Thời gian</th>-->
+    <!--        <th>Hành động</th>-->
+    <!--    </tr>-->
+    <!--    {% for email in emails %}-->
+    <!--    <tr>-->
+    <!--        <td>{{ email.sender_email }}</td>-->
+    <!--        <td>{{ email.subject }}</td>-->
+    <!--        <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>-->
+    <!--        <td>-->
+    <!--            <a href="{{ url_for('decrypt_email', email_id=email.id) }}">Giải mã</a>-->
+    <!--&lt;!&ndash;            {% if email.attachment %}&ndash;&gt;-->
+    <!--&lt;!&ndash;                <a href="{{ url_for('download_attachment', email_id=email.id) }}">Tải file đính kèm</a>&ndash;&gt;-->
+    <!--&lt;!&ndash;            {% endif %}&ndash;&gt;-->
+    <!--        </td>-->
+    <!--    </tr>-->
+    <!--    {% endfor %}-->
+
+    <!--    &lt;!&ndash; inbox.html &ndash;&gt;-->
+    <!--{% for email in emails %}-->
+    <!--    <tr>-->
+    <!--        <td>{{ email.sender_email }}</td>-->
+    <!--        <td>{{ email.subject }}</td>-->
+    <!--        <td>{{ email.local_time }}</td>-->
+    <!--        <td>-->
+    <!--            <form action="{{ url_for('delete_email', email_id=email.id) }}" method="POST" style="display:inline;">-->
+    <!--                <button type="submit" class="btn btn-danger">Xóa</button>-->
+    <!--            </form>-->
+    <!--        </td>-->
+    <!--    </tr>-->
+    <!--{% endfor %}-->
+
+    <!--</table>-->
+    <!--<h1>Soạn Email</h1>-->
+    <!--<form method="POST" action="{{ url_for('send_email') }}" enctype="multipart/form-data">-->
+    <!--    <label for="recipient">Người nhận:</label>-->
+    <!--    <input type="email" id="recipient" name="recipient" class="form-control" required>-->
+
+    <!--    <label for="subject">Chủ đề:</label>-->
+    <!--    <input type="text" id="subject" name="subject" class="form-control" required>-->
+
+    <!--    <label for="body">Nội dung:</label>-->
+    <!--    <textarea id="body" name="body" class="form-control" required></textarea>-->
+
+    <!--    <label for="attachment">File đính kèm:</label>-->
+    <!--    <input type="file" id="attachment" name="attachment" class="form-control">-->
+
+    <!--    <button type="submit">Gửi Email</button>-->
+    <!--</form>-->
 
 
+    <!--</body>-->
+    <!--</html>-->
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Soạn Email</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f7f7f7;
+            }
+            .btn-compose {
+                background-color: #1a73e8;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+            }
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hộp Thư Đến</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f8f9fa;
-        }
-        h1 {
-            color: #343a40;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ced4da;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #e9ecef;
-        }
-        .form-control {
-            width: 100%;
-            max-width: 600px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
+            .btn-compose:hover {
+                background-color: #135bb2;
+            }
 
-<h1>Hộp Thư Đến</h1>
-<form method="GET" action="{{ url_for('inbox') }}">
-    <input type="text" name="search" placeholder="Tìm kiếm theo người gửi hoặc chủ đề" class="form-control" style="max-width: 400px; display: inline-block;">
-    <button type="submit">Tìm kiếm</button>
-</form>
-<table>
-    <tr>
-        <th>Người gửi</th>
-        <th>Chủ đề</th>
-        <th>Thời gian</th>
-        <th>Hành động</th>
-    </tr>
+            /* Modal Styles */
+            .modal {
+                display: none; /* Ẩn modal ban đầu */
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* Màu nền tối mờ */
+            }
+            .modal-content {
+                background-color: white;
+                margin: 15% auto;
+                padding: 20px;
+                border-radius: 8px;
+                width: 500px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            }
+            .modal-header {
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            label {
+                font-size: 14px;
+                margin-bottom: 5px;
+                display: block;
+            }
+             table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            th, td {
+                border: 1px solid #ced4da;
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #e9ecef;
+            }
+            input[type="text"], input[type="email"], textarea {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            textarea {
+                height: 150px;
+                resize: none;
+            }
+            .form-actions {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .btn-send {
+                background-color: #1a73e8;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .btn-send:hover {
+                background-color: #135bb2;
+            }
+            .attachment-icon {
+                font-size: 18px;
+                cursor: pointer;
+                color: #1a73e8;
+            }
+            .attachment-icon:hover {
+                color: #135bb2;
+            }
+
+            /* Close button */
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+
+
+    <h1>Hộp Thư Đến</h1>
+    <form method="GET" action="{{ url_for('inbox') }}">
+        <input type="text" name="search" placeholder="Tìm kiếm theo người gửi hoặc chủ đề" class="form-control" style="max-width: 400px; display: inline-block;">
+        <button type="submit">Tìm kiếm</button>
+    </form>
+    <table>
+        <tr>
+            <th>Người gửi</th>
+            <th>Chủ đề</th>
+            <th>Thời gian</th>
+            <th>Hành động</th>
+        </tr>
+        {% for email in emails %}
+        <tr>
+            <td>{{ email.sender_email }}</td>
+            <td>{{ email.subject }}</td>
+            <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                <a href="{{ url_for('decrypt_email', email_id=email.id) }}">Giải mã</a>
+    <!--            {% if email.attachment %}-->
+    <!--                <a href="{{ url_for('download_attachment', email_id=email.id) }}">Tải file đính kèm</a>-->
+    <!--            {% endif %}-->
+            </td>
+        </tr>
+        {% endfor %}
+
+        <!-- inbox.html -->
     {% for email in emails %}
-    <tr>
-        <td>{{ email.sender_email }}</td>
-        <td>{{ email.subject }}</td>
-        <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-        <td>
-            <a href="{{ url_for('decrypt_email', email_id=email.id) }}">Giải mã</a>
-<!--            {% if email.attachment %}-->
-<!--                <a href="{{ url_for('download_attachment', email_id=email.id) }}">Tải file đính kèm</a>-->
-<!--            {% endif %}-->
-        </td>
-    </tr>
+        <tr>
+            <td>{{ email.sender_email }}</td>
+            <td>{{ email.subject }}</td>
+            <td>{{ email.local_time }}</td>
+            <td>
+                <form action="{{ url_for('delete_email', email_id=email.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </td>
+        </tr>
     {% endfor %}
-</table>
-<h1>Soạn Email</h1>
-<form method="POST" action="{{ url_for('send_email') }}" enctype="multipart/form-data">
-    <label for="recipient">Người nhận:</label>
-    <input type="email" id="recipient" name="recipient" class="form-control" required>
 
-    <label for="subject">Chủ đề:</label>
-    <input type="text" id="subject" name="subject" class="form-control" required>
+    </table>
 
-    <label for="body">Nội dung:</label>
-    <textarea id="body" name="body" class="form-control" required></textarea>
 
-    <label for="attachment">File đính kèm:</label>
-    <input type="file" id="attachment" name="attachment" class="form-control">
+    <!-- Nút Soạn mail -->
+    <button class="btn-compose" id="composeBtn">Soạn mail</button>
 
-    <button type="submit">Gửi Email</button>
-</form>
 
+
+    <!-- Modal chứa form soạn email -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">Thư mới</div>
+            <form method="POST" action="{{ url_for('send_email') }}" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="recipient">Đến</label>
+                    <input type="email" id="recipient" name="recipient" required>
+                </div>
+
+<!--                <div class="form-group">-->
+<!--                    <label for="subject">Tiêu đề</label>-->
+<!--                    <input type="text" id="subject" name="subject" required>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="body">Nội dung</label>-->
+<!--                    <textarea id="body" name="body" required></textarea>-->
+<!--                </div>-->
+
+<!--                <div class="form-actions">-->
+<!--                    <input type="file" id="attachment" name="attachment" style="display:none">-->
+<!--                    <label for="attachment" class="attachment-icon">📎 Đính kèm tệp</label>-->
+<!--                    <button type="submit" class="btn-send">Gửi</button>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; JavaScript để bật/tắt modal &ndash;&gt;-->
+<!--    <script>-->
+<!--        // Lấy các phần tử-->
+<!--        var modal = document.getElementById("emailModal");-->
+<!--        var btn = document.getElementById("composeBtn");-->
+<!--        var span = document.getElementsByClassName("close")[0];-->
+
+<!--        // Khi người dùng nhấn nút "Soạn mail", hiện modal-->
+<!--        btn.onclick = function() {-->
+<!--            modal.style.display = "block";-->
+<!--        }-->
+
+<!--        // Khi người dùng nhấn nút "X", ẩn modal-->
+<!--        span.onclick = function() {-->
+<!--            modal.style.display = "none";-->
+<!--        }-->
+
+<!--        // Khi người dùng nhấn vào bất kỳ nơi nào ngoài modal, ẩn modal-->
+<!--        window.onclick = function(event) {-->
+<!--            if (event.target == modal) {-->
+<!--                modal.style.display = "none";-->
+<!--            }-->
+<!--        }-->
+
+
+<!--         document.querySelector('form').addEventListener('submit', function(event) {-->
+<!--        event.preventDefault();-->
+
+<!--        var formData = new FormData(this);-->
+
+<!--        fetch(this.action, {-->
+<!--            method: 'POST',-->
+<!--            body: formData-->
+<!--        })-->
+<!--        .then(response => response.text())-->
+<!--        .then(result => {-->
+<!--            alert(result); // Hiển thị thông báo thành công-->
+<!--            modal.style.display = 'none'; // Đóng modal-->
+<!--        })-->
+<!--        .catch(error => {-->
+<!--            console.error('Error:', error);-->
+<!--        });-->
+<!--    });-->
+<!--    </script>-->
+
+<!--    </body>-->
+<!--    </html>-->
+
+                <div class="form-group">
+                <label for="subject">Chủ đề</label>
+                <input type="text" id="subject" name="subject" required>
+            </div>
+
+            <div class="form-group">
+                <label for="body">Nội dung</label>
+                <textarea id="body" name="body" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="attachment">File đính kèm</label>
+                <input type="file" id="attachment" name="attachment">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-send">Gửi Email</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Hiển thị modal khi nhấn nút "Soạn mail"
+    var modal = document.getElementById('emailModal');
+    var btn = document.getElementById('composeBtn');
+    var span = document.getElementsByClassName('close')[0];
+
+    btn.onclick = function() {
+        modal.style.display = 'block';
+    }
+
+    // Đóng modal khi nhấn nút "X" hoặc ra ngoài vùng modal
+    span.onclick = function() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+
+</script>
 
 </body>
 </html>
-

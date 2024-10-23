@@ -1,3 +1,106 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Giải Mã Email</title>-->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            margin: 20px;-->
+<!--            background-color: #f8f9fa;-->
+<!--        }-->
+<!--        h1 {-->
+<!--            color: #343a40;-->
+<!--        }-->
+<!--        .error {-->
+<!--            color: red;-->
+<!--        }-->
+<!--        .success {-->
+<!--            color: green;-->
+<!--        }-->
+<!--        .form-control {-->
+<!--            width: 100%;-->
+<!--            max-width: 600px;-->
+<!--            padding: 10px;-->
+<!--            margin-bottom: 10px;-->
+<!--            border: 1px solid #ced4da;-->
+<!--            border-radius: 5px;-->
+<!--        }-->
+<!--        button {-->
+<!--            padding: 10px 15px;-->
+<!--            border: none;-->
+<!--            border-radius: 5px;-->
+<!--            background-color: #007bff;-->
+<!--            color: white;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+<!--        button:hover {-->
+<!--            background-color: #0056b3;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Giải Mã Email</h1>-->
+<!--    <h2>Chủ đề: {{ email.subject }}</h2>-->
+<!--    <h3>Nội dung đã mã hóa:</h3>-->
+<!--&lt;!&ndash;    <pre>{{ email.body }}</pre>&ndash;&gt;-->
+<!--    <textarea readonly>{{ email.body }}</textarea>-->
+
+<!--    {% if message %}-->
+<!--        <p class="error">{{ message }}</p>-->
+<!--    {% endif %}-->
+
+<!--&lt;!&ndash;    <form method="POST" enctype="multipart/form-data">&ndash;&gt;-->
+<!--&lt;!&ndash;        <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label><br>&ndash;&gt;-->
+<!--&lt;!&ndash;        <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required><br>&ndash;&gt;-->
+<!--&lt;!&ndash;        <button type="submit" name="action" value="decrypt_body">Giải mã nội dung</button>&ndash;&gt;-->
+<!--&lt;!&ndash;        <button type="submit" name="action" value="decrypt_attachment">Giải mã tệp đính kèm</button>&ndash;&gt;-->
+<!--&lt;!&ndash;    </form>&ndash;&gt;-->
+<!--    <form method="POST" enctype="multipart/form-data">-->
+<!--    <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label><br>-->
+<!--    <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required><br>-->
+<!--    <button type="submit" name="action" value="decrypt_both">Giải mã nội dung và tệp đính kèm</button>-->
+<!--</form>-->
+
+
+<!--&lt;!&ndash;    {% if is_verified is not none %}&ndash;&gt;-->
+<!--&lt;!&ndash;        <p class="success">Chữ ký số đã được xác thực: {{ 'Có' if is_verified else 'Không' }}</p>&ndash;&gt;-->
+<!--&lt;!&ndash;    {% endif %}&ndash;&gt;-->
+
+<!--   {% if decrypted_body %}-->
+<!--    <h3>Nội dung đã giải mã:</h3>-->
+<!--    <p>{{ decrypted_body }}</p>-->
+<!--{% elif decryption_error %}-->
+<!--    <p class="error">Không thể giải mã nội dung. Vui lòng kiểm tra khóa riêng của bạn.</p>-->
+<!--{% endif %}-->
+
+<!--&lt;!&ndash;{% if email.attachment %}&ndash;&gt;-->
+<!--&lt;!&ndash;    <h3>Tệp đính kèm đã mã hóa:</h3>&ndash;&gt;-->
+<!--&lt;!&ndash;    <p><strong>Tệp: {{ email.attachment }}</strong></p>&ndash;&gt;-->
+<!--&lt;!&ndash;    {% if decrypted_attachment %}&ndash;&gt;-->
+<!--&lt;!&ndash;        <a href="data:application/octet-stream;base64,{{ decrypted_attachment }}" download="decrypted_attachment">Tải về tệp đính kèm</a>&ndash;&gt;-->
+<!--&lt;!&ndash;    {% else %}&ndash;&gt;-->
+<!--&lt;!&ndash;        <p>Không có tệp đính kèm đã giải mã.</p>&ndash;&gt;-->
+<!--&lt;!&ndash;    {% endif %}&ndash;&gt;-->
+<!--&lt;!&ndash;{% endif %}&ndash;&gt;-->
+
+<!--{% if decrypted_attachment_path %}-->
+<!--    <h3>Tệp đính kèm đã giải mã:</h3>-->
+<!--    <a href="{{ url_for('download_decrypted_file', file_path=decrypted_attachment_path) }}" download="{{ email.attachment }}">Tải về tệp đính kèm</a>-->
+<!--{% endif %}-->
+
+<!--{% if decrypted_image_path %}-->
+<!--<h3>Hình ảnh đã giải mã:</h3>-->
+<!--<img src="{{ url_for('static', filename=decrypted_image_path) }}" alt="Hình ảnh đã giải mã" style="max-width: 100%;">-->
+<!--{% endif %}-->
+
+
+
+<!--    <a href="{{ url_for('inbox') }}">Quay lại Hộp Thư Đến</a>-->
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,49 +147,40 @@
     <h1>Giải Mã Email</h1>
     <h2>Chủ đề: {{ email.subject }}</h2>
     <h3>Nội dung đã mã hóa:</h3>
-<!--    <pre>{{ email.body }}</pre>-->
     <textarea readonly>{{ email.body }}</textarea>
+    {% if email.attachment %}
+    <h3>Tệp đính kèm đã mã hóa:</h3>
+    <p><strong>Nội dung mã hóa (hex):</strong> {{ email.encrypted_attachment_content }}</p>
+{% endif %}
+
 
     {% if message %}
         <p class="error">{{ message }}</p>
     {% endif %}
 
-<!--    <form method="POST" enctype="multipart/form-data">-->
-<!--        <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label><br>-->
-<!--        <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required><br>-->
-<!--        <button type="submit" name="action" value="decrypt_body">Giải mã nội dung</button>-->
-<!--        <button type="submit" name="action" value="decrypt_attachment">Giải mã tệp đính kèm</button>-->
-<!--    </form>-->
     <form method="POST" enctype="multipart/form-data">
-    <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label><br>
-    <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required><br>
-    <button type="submit" name="action" value="decrypt_both">Giải mã nội dung và tệp đính kèm</button>
-</form>
-
-
-<!--    {% if is_verified is not none %}-->
-<!--        <p class="success">Chữ ký số đã được xác thực: {{ 'Có' if is_verified else 'Không' }}</p>-->
-<!--    {% endif %}-->
+        <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label><br>
+        <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required><br>
+        <button type="submit" name="action" value="decrypt_both">Giải mã nội dung và tệp đính kèm</button>
+    </form>
 
    {% if decrypted_body %}
-    <h3>Nội dung đã giải mã:</h3>
-    <p>{{ decrypted_body }}</p>
-{% elif decryption_error %}
-    <p class="error">Không thể giải mã nội dung. Vui lòng kiểm tra khóa riêng của bạn.</p>
-{% endif %}
-
-{% if email.attachment %}
-    <h3>Tệp đính kèm đã mã hóa:</h3>
-    <p><strong>Tệp: {{ email.attachment }}</strong></p>
-    {% if decrypted_attachment %}
-        <a href="data:application/octet-stream;base64,{{ decrypted_attachment }}" download="decrypted_attachment">Tải về tệp đính kèm</a>
-    {% else %}
-        <p>Không có tệp đính kèm đã giải mã.</p>
+        <h3>Nội dung đã giải mã:</h3>
+        <p>{{ decrypted_body }}</p>
+    {% elif decryption_error %}
+        <p class="error">Không thể giải mã nội dung. Vui lòng kiểm tra khóa riêng của bạn.</p>
     {% endif %}
-{% endif %}
 
+    {% if decrypted_attachment_path %}
+        <h3>Tệp đính kèm đã giải mã:</h3>
+        <a href="{{ url_for('download_decrypted_file', file_path=decrypted_attachment_path) }}" download="{{ email.attachment }}">Tải về tệp đính kèm</a>
+    {% endif %}
+
+<!--    {% if decrypted_image_path %}-->
+<!--        <h3>Hình ảnh đã giải mã:</h3>-->
+<!--        <img src="{{ decrypted_image_path }}" alt="Hình ảnh đã giải mã" style="max-width: 100%;">-->
+<!--    {% endif %}-->
 
     <a href="{{ url_for('inbox') }}">Quay lại Hộp Thư Đến</a>
 </body>
 </html>
-
