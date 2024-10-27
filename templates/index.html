@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page Template</title>
+    <title>Mã hóa email</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.2.0/css/all.css'>
@@ -13,23 +13,75 @@
 <!--    <link rel="stylesheet" href="./css/login-register.css">-->
 </head>
 <body>
+    <!-- Header Section -->
     <header>
         <div class="logo">Mã hóa Email</div>
-        <div class="menu">
+        <nav>
+            <a href="#features">Tính năng</a>
+            <a href="#contact">Liên hệ</a>
+        </nav>
+        <div class="cta-buttons">
             <button onclick="showRegister()" class="btn">Đăng ký</button>
             <button onclick="showLogin()" class="btn">Đăng nhập</button>
         </div>
     </header>
 
-    <div class="container">
-        <section class="hero-section">
-            <div class="text-content">
-                <h1>LANDING PAGE WEBSITE DESIGN TEMPLATE</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna.</p>
-                <a onclick="showLogin()" class="cta-button">Get started</a>
-            </div>
-        </section>
-    </div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Mã hóa Email</h1>
+            <p>Hợp lý hóa giao tiếp qua email của bạn, nâng cao năng suất và cộng tác dễ dàng với các giải pháp không gian làm việc email nâng cao của chúng tôi.</p>
+            <a href="#get-started" style="background-color: #1a73e8; color: white; padding: 12px 24px; border-radius: 20px; text-decoration: none;">Get Started</a>
+        </div>
+        <img src="/static/img/bgpjpg.jpg" alt="Workspace Image">
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="feature-card">
+            <h3>Cộng tác hiệu quả</h3>
+            <p>Làm việc cùng nhau liền mạch với tính năng chia sẻ tệp trong thời gian thực.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Hộp thư đến thông minh</h3>
+            <p>Sắp xếp email của bạn một cách thông minh và ưu tiên những gì quan trọng nhất.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Bảo mật nâng cao</h3>
+            <p>Giữ an toàn cho thông tin liên lạc của bạn với các giao thức bảo mật hàng đầu của chúng tôi.</p>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <h2>Khách hàng của chúng tôi nói gì</h2>
+        <div class="testimonial">
+            <p>"Email Bảo Mật đã thay đổi cách chúng tôi giao tiếp. Nó trực quan và thông tin của chúng tôi được bảo mật!"</p>
+            <span>- Vu Ng.</span>
+        </div>
+        <div class="testimonial">
+            <p>"Rất khuyến khích cho bất kỳ doanh nghiệp nào muốn cải thiện bảo mật cho email của họ."</p>
+            <span>- Hi Tr.</span>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <h2>Câu hỏi thường gặp</h2>
+        <div class="faq-item">
+            <h3>Tôi có cần phải trả tiền để được sử dụng dịch vụ?</h3>
+            <p>Không, dịch vụ của chúng tôi hoàn toàn miễn phí</p>
+        </div>
+        <div class="faq-item">
+            <h3>Dữ liệu của chúng tôi có an toàn không?</h3>
+            <p>Email của chúng bạn được mã hóa thành một định dạng cụ thể và chỉ những người có khóa chính xác mới có thể giải mã nó.</p>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 Email Protector. All Rights Reserved.</p>
+    </footer>
 
     <!-- Login/Register -->
     <div class="screen-login">
