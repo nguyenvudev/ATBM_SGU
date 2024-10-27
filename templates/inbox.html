@@ -74,8 +74,8 @@
                         <div class="info">
                             <div class="main-info">
                                 <h3 class="title-form">Thông tin cá nhân</h3>
-                                <input type="text" name="fullname" id="fullname" class="full-name" placeholder="Nguyễn Văn A" readonly />
-                                <input type="email" name="fullemail" id="fullemail" class="full-email" placeholder="abc@gmail.com" readonly />
+                                <input type="text" name="fullname" id="fullname" class="full-name" placeholder="Nguyễn Văn A" value="{{ session['username'] }}"  readonly />
+                                <input type="email" name="fullemail" id="fullemail" class="full-email" placeholder="abc@gmail.com" value="{{ session['email'] }}" readonly />
                             </div>
                             <img src="{{ url_for('static', filename='img/account.jpg') }}" alt="profileImg">
                         </div>

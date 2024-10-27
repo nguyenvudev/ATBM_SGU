@@ -95,6 +95,7 @@ def login():
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             session['email'] = user.email
+            session['username'] = user.username
             session['private_key'] = user.private_key
             return redirect(url_for('inbox'))
         return "Email hoặc mật khẩu không đúng."
