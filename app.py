@@ -430,8 +430,12 @@ def recover_private_key():
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
-            # Gửi khóa riêng tư qua email hoặc cho phép tải xuống
-            private_key_filename = f"private_key_{email}.pem"
+            # Đường dẫn đến thư mục để lưu tệp khóa riêng
+            directory = 'private_keys'
+            os.makedirs(directory, exist_ok=True)  # Tạo thư mục nếu chưa tồn tại
+
+            # Tạo tên tệp với đường dẫn đầy đủ
+            private_key_filename = os.path.join(directory, f"private_key_{email}.pem")
             with open(private_key_filename, 'w') as f:
                 f.write(user.private_key)
 
@@ -441,8 +445,6 @@ def recover_private_key():
         return "Email hoặc mật khẩu không đúng."
 
     return render_template('recover_private_key.html')
-
-
 
 
 @app.route('/delete_email/<int:email_id>', methods=['POST'])
