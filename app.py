@@ -102,26 +102,42 @@ def login():
 
     return render_template('login.html')
 
+
+# thêm hiện thư đã gửi
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
     search_query = request.args.get('search', '')
-    emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
+    # Lấy danh sách email nhận
+    received_emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
 
     # Nếu có từ khóa tìm kiếm, lọc email theo người gửi hoặc chủ đề
     if search_query:
-        emails = emails.filter(
+        received_emails = received_emails.filter(
             (User.email.ilike(f'%{search_query}%')) |
             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
         ).join(User, User.id == EncryptedEmail.sender_id)
 
-    emails = emails.all()
+    received_emails = received_emails.all()
+
+    # Lấy danh sách email đã gửi
+    sent_emails = (
+        db.session.query(
+            EncryptedEmail.subject,
+            EncryptedEmail.timestamp,
+            User.email.label('receiver_email')
+        )
+        .join(User, User.id == EncryptedEmail.receiver_id)
+        .filter(EncryptedEmail.sender_id == session['user_id'])
+        .all()
+    )
 
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 
-    for email in emails:
+    # Chuyển đổi thời gian cho email nhận
+    for email in received_emails:
         sender = User.query.get(email.sender_id)
         email.sender_email = sender.email if sender else "Người gửi không xác định"
         if email.timestamp:
@@ -130,7 +146,48 @@ def inbox():
         else:
             email.local_time = None
 
-    return render_template('inbox.html', emails=emails)
+    # Chuyển đổi thời gian cho email đã gửi
+    email_data = []
+    for email in sent_emails:
+        local_time = email.timestamp.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        email_data.append({
+            'receiver_email': email.receiver_email,
+            'subject': email.subject,
+            'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
+
+
+# @app.route('/inbox', methods=['GET'])
+# def inbox():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+
+#     search_query = request.args.get('search', '')
+#     emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
+
+#     # Nếu có từ khóa tìm kiếm, lọc email theo người gửi hoặc chủ đề
+#     if search_query:
+#         emails = emails.filter(
+#             (User.email.ilike(f'%{search_query}%')) |
+#             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
+#         ).join(User, User.id == EncryptedEmail.sender_id)
+
+#     emails = emails.all()
+
+#     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
+#     for email in emails:
+#         sender = User.query.get(email.sender_id)
+#         email.sender_email = sender.email if sender else "Người gửi không xác định"
+#         if email.timestamp:
+#             utc_time = email.timestamp
+#             email.local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+#         else:
+#             email.local_time = None
+
+#     return render_template('inbox.html', emails=emails)
 
 
 @app.route('/send', methods=['GET', 'POST'])
@@ -373,8 +430,12 @@ def recover_private_key():
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
-            # Gửi khóa riêng tư qua email hoặc cho phép tải xuống
-            private_key_filename = f"private_key_{email}.pem"
+            # Đường dẫn đến thư mục để lưu tệp khóa riêng
+            directory = 'private_keys'
+            os.makedirs(directory, exist_ok=True)  # Tạo thư mục nếu chưa tồn tại
+
+            # Tạo tên tệp với đường dẫn đầy đủ
+            private_key_filename = os.path.join(directory, f"private_key_{email}.pem")
             with open(private_key_filename, 'w') as f:
                 f.write(user.private_key)
 
@@ -384,8 +445,6 @@ def recover_private_key():
         return "Email hoặc mật khẩu không đúng."
 
     return render_template('recover_private_key.html')
-
-
 
 
 @app.route('/delete_email/<int:email_id>', methods=['POST'])
