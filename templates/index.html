@@ -4,28 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landing Page Template</title>
-    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.2.0/css/all.css'>
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.2.0/css/fontawesome.css'>
+    <link rel='stylesheet' href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css'>
+<!--    <link rel="stylesheet" href="./css/index.css">-->
+<!--    <link rel="stylesheet" href="./css/login-register.css">-->
 </head>
 <body>
-
     <header>
-        <div class="logo">Ứng dụng mã hóa Email</div>
+        <div class="logo">Mã hóa Email</div>
         <div class="menu">
-            <a href="{{ url_for('register') }}" class="btn">Đăng ký</a>
-             <a href="{{ url_for('login') }}" class="btn">Đăng nhập</a>
+            <button onclick="showRegister()" class="btn">Đăng ký</button>
+            <button onclick="showLogin()" class="btn">Đăng nhập</button>
         </div>
     </header>
 
     <div class="container">
-
         <section class="hero-section">
             <div class="text-content">
                 <h1>LANDING PAGE WEBSITE DESIGN TEMPLATE</h1>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna.</p>
-                <a href="{{ url_for('login') }}" class="cta-button">Get started</a>
+                <a onclick="showLogin()" class="cta-button">Get started</a>
             </div>
         </section>
     </div>
 
+    <!-- Login/Register -->
+    <div class="screen-login">
+        <div class="screen-content">
+            <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
+            <form class="login" method="POST" action="{{ url_for('login') }}">
+                <h2>Login</h2>
+                <div class="login-field">
+                    <i class="login-icon fas fa-user"></i>
+                    <input type="email" class="login-input" name="email" id="email" placeholder="abc@gmail.com" required />
+                </div>
+                <div class="login-field">
+                    <i class="login-icon fas fa-lock"></i>
+                    <input type="password" class="login-input" name="password" id="password" placeholder="Password" required />
+                </div>
+                <button class="button login-submit">
+                    <span class="button-text">Log In Now</span>
+                    <i class="button-icon fas fa-chevron-right"></i>
+                </button>
+            </form>
+            <div class="social-login">
+                <h3>Log in via</h3>
+                <div class="social-icons">
+<!--                    <img src="./img/icons8-facebook-48.png" alt="" class="social-login-icon">-->
+<!--                    <img src="./img/icons8-google-48.png" alt="" class="social-login-icon">-->
+                     <img src="{{ url_for('static', filename='img/icons8-facebook-48.png') }}" alt="fb-icon" class="social-login-icon">
+                     <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
+                </div>
+            </div>
+            <div class="option">
+                <p class="message">Not registered?
+                    <!-- <a href="{{ url_for('register') }}">Create an account</a> |
+                    <a href="{{ url_for('index') }}">Back</a> -->
+                    <a onclick="showRegister()">Create an account</a>
+                </p>
+            </div>
+        </div>
+        <div class="screen-background">
+            <span class="screen-background-shape screen-background-shape4"></span>
+            <span class="screen-background-shape screen-background-shape3"></span>
+            <span class="screen-background-shape screen-background-shape2"></span>
+            <span class="screen-background-shape screen-background-shape1"></span>
+        </div>
+    </div>
+
+     <!-- Register -->
+    <div class="screen-register">
+        <div class="screen-content">
+            <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
+            <form class="register" method="POST" action="{{ url_for('register') }}">
+                <h2>Register</h2>
+                <div class="register-field">
+                    <i class="register-icon fas fa-user"></i>
+                    <input type="text" class="register-input" name="username" id="username" placeholder="Fullname" required />
+                </div>
+                <div class="register-field">
+                    <i class="register-icon fas fa-user"></i>
+                    <input type="email" class="register-input" name="email" id="email2" placeholder="abc@gmail.com" required />
+                </div>
+                <div class="register-field">
+                    <i class="register-icon fas fa-lock"></i>
+                    <input type="password" class="register-input" name="password" id="password2" placeholder="Password" required />
+                </div>
+                <button class="button register-submit">
+                    <span class="button-text">Create</span>
+                    <i class="button-icon fas fa-chevron-right"></i>
+                </button>
+            </form>
+            <div class="option">
+                <p class="message">Already register?
+                    <!-- <a href="{{ url_for('login') }}">Sign In</a> |
+                    <a href="{{ url_for('index') }}">Back</a></p> -->
+                    <a onclick="showLogin()">Sign In</a>
+                </p>
+            </div>
+        </div>
+        <div class="screen-background">
+            <span class="screen-background-shape screen-background-shape4"></span>
+            <span class="screen-background-shape screen-background-shape3"></span>
+            <span class="screen-background-shape screen-background-shape2"></span>
+            <span class="screen-background-shape screen-background-shape1"></span>
+        </div>
+    </div>
+    <div class="overlay"></div>
+    <script src="{{ url_for('static', filename='js/index-script.js') }}"></script>
 </body>
 </html>
