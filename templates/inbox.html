@@ -120,15 +120,13 @@
                         <th>Thời gian</th>
                         <th class="col-action">Hành động</th>
                     </tr>
-                    {% for email in emails %}
+                    {% for email in received_emails %}
                     <tr>
                         <td><input type="checkbox" class="email-checkbox-received"></td>
                         <td>{{ email.sender_email }}</td>
                         <td>{{ email.subject }}</td>
                         <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td class="decode">
-                            <a href="{{ url_for('decrypt_email', email_id=email.id) }}" onclick="showDecode()" class="btn-show-decode"><i class="bx bx-key"></i></a>
-                        </td>
+                        <td class="decode"><a href="{{ url_for('decrypt_email', email_id=email.id) }}" onclick="showDecode()" class="btn-show-decode"><i class="bx bx-key"></i></a></td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -151,15 +149,13 @@
                         <th>Thời gian</th>
                         <th class="col-action">Hành động</th>
                     </tr>
-                    {% for email in emails %}
+                    {% for email in sent_emails %}
                     <tr>
                         <td><input type="checkbox" class="email-checkbox-send"></td>
-                        <td>{{ email.address_send }}</td>
-                        <td>{{ email.subject_send }}</td>
-                        <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td class="see">
-                            <a onclick="showDetails()" class="btn-show-details"><i class="bx bx-envelope-open"></i></a>
-                        </td>
+                        <td>{{ email.receiver_email }}</td>
+                        <td>{{ email.subject }}</td>
+                        <td>{{ email.local_time }}</td>
+                        <td class="see"><a onclick="showDetails()" class="btn-show-details"><i class="bx bx-envelope-open"></i></a></td>
                     </tr>
                     {% endfor %}
                 </table>
