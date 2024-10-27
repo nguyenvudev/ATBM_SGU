@@ -1,0 +1,232 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* Container */
+.container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50vh;
+}
+
+/* Form Decode */
+.form-decode {
+    position: absolute;
+    width: 75%;
+    border: 5px solid #BEDBED;
+    background: #DBE9F2;
+    border-radius: 20px;
+    padding: 20px; /* Tăng padding để có không gian hơn */
+    font-size: 20px;
+    box-shadow: 0px 0px 24px #466EB4;
+    transition: all 0.3s ease; /* Thêm hiệu ứng chuyển động */
+}
+
+.form-decode:hover {
+    transform: scale(1.02); /* Phóng to khi hover */
+}
+
+.form-decode h1 {
+    text-align: center;
+    color: #466EB4; /* Thay đổi màu chữ tiêu đề */
+}
+
+.form-decode p {
+    font-weight: bold;
+    margin: 10px 0px;
+}
+
+.form-decode .error {
+    font-style: italic;
+    color: red; /* Màu đỏ cho thông báo lỗi */
+}
+
+.form-decode span {
+    font-weight: normal;
+}
+
+/* Form Private Key */
+.form-private-key {
+    margin-top: 10px;
+}
+
+/* Upload Private Key */
+.upload-private-key {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-private-key label {
+    font-weight: bold;
+}
+
+/* Upload Icon */
+.upload-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    position: relative;
+    transition: transform 0.3s ease; /* Thêm hiệu ứng khi hover */
+}
+
+.upload-icon:hover {
+    transform: scale(1.1); /* Phóng to khi hover */
+}
+
+.upload-icon .tooltip-text {
+    visibility: hidden;
+    background-color: #fff;
+    text-align: center;
+    padding: 5px;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 45px;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+
+.upload-icon .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 19px;
+    transform: translateX(-50%);
+    border-width: 9px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+}
+
+.upload-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.upload-icon i:hover {
+    cursor: pointer;
+    color: #466EB4;
+    transform: rotate(90deg);
+    transition: transform 0.6s ease;
+    background: #BEDBED;
+    border-radius: 100%;
+}
+
+.upload-icon span {
+    font-size: 16px;
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+#private_key_file {
+    display: none;
+}
+
+/* Button */
+.form-private-key button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid #8b8b8b;
+    cursor: pointer;
+    font-size: 18px;
+    width: 100px;
+    transition: background-color 0.3s, transform 0.3s; /* Thêm hiệu ứng cho button */
+    background: #DBE9F2;
+}
+
+.form-private-key button:hover {
+    background: #BEDBED;
+    border: 1px solid #466EB4;
+    transform: scale(1.1);
+}
+
+/* Content */
+.content-1 {
+    height: auto;
+    max-height: 70px;
+    padding: 5px 5px;
+    overflow: auto;
+    font-size: 16px;
+    border: 1px solid #050C9C;
+}
+
+.content-2 {
+    height: auto;
+    max-height: 70px;
+    padding: 5px 5px;
+    overflow: auto;
+    font-size: 5px;
+    border: 1px solid #050C9C;
+}
+
+.content {
+    height: 70px;
+    padding: 5px 5px;
+    overflow: auto;
+    border: 1px solid #050C9C;
+}
+
+.content span {
+   font-size: 16px;
+}
+
+/* Footer Icon */
+.footer-icon {
+    position: relative;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.footer-icon .tooltip-text {
+    visibility: hidden;
+    background-color: #fff;
+    color: #000;
+    text-align: center;
+    padding: 5px;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50px;
+    transform: translateX(-50%);
+    opacity: 0;
+    white-space: nowrap;
+    font-size: 16px;
+}
+
+.footer-icon .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    transform: translateX(-50%);
+    border-width: 9px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+}
+
+.footer-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.footer-icon i {
+     font-size: 28px;
+     transition: color 0.3s, transform 0.3s;
+}
+
+.footer-icon:hover i {
+    color: #466EB4;
+    transform: scale(1.1);
+}

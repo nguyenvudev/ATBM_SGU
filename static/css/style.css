@@ -1,71 +1,3 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-}
-
-.container {
-    width: 600px;
-    margin: 50px auto;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-    text-align: center;
-    color: #333;
-}
-
-form input[type="email"],
-form input[type="text"],
-form textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0 15px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #5cb85c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-form button:hover {
-    background-color: #4cae4c;
-}
-
-a {
-    display: inline-block;
-    margin: 10px 0;
-    color: #337ab7;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table th, table td {
-    padding: 10px;
-    text-align: left;
-}
-
-table th {
-    background-color: #f2f2f2;
-}
-
 *{
     margin: 0;
     padding: 0;
@@ -74,32 +6,51 @@ table th {
 body {
     font-family: 'Times New Roman', Times, serif;
 }
+
 /* -_Login/Register-_ */
 .container-login,
-.container-register{
+.container-register {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
 }
 .screen-login,
 .screen-register {
-    background: linear-gradient(90deg, #DBE9F2, #BEDBED, #466EB4);
-    position: relative;
+    /* position: relative; */
+    position: fixed;
     height: 600px;
-    width: 360px;
+    width: 400px;
+    top: 10vh;
+    left: 50%;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
     box-shadow: 0px 0px 24px #466EB4;
+    transform: translateX(-50%) translateY(-20px) scale(0);
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    background: linear-gradient(90deg, #DBE9F2, #BEDBED, #466EB4);
+}
+.screen-login.active,
+.screen-register.active {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
 }
 .screen-content {
     z-index: 1;
     position: relative;
     height: 100%;
 }
-.login,
-.register {
-    width: 320px;
+.login{
+    width: 380px;
     padding: 30px;
     padding-top: 120px;
+}
+.register {
+    width: 380px;
+    padding: 30px;
+    padding-top: 90px;
 }
 .login-field,
 .register-field {
@@ -118,7 +69,7 @@ body {
     border-bottom: 2px solid #D1D1D4;
     background: none;
     padding: 10px;
-    padding-left: 24px;
+    padding-left: 30px;
     font-weight: 400;
     width: 75%;
     transform: .2s;
@@ -143,10 +94,13 @@ body {
     text-transform: uppercase;
     display: flex;
     align-items: center;
-    width: 70%;
+    width: 60%;
     color: #466EB4;
     cursor: pointer;
     transition: .2s;
+}
+.register-submit {
+    width: 50%;
 }
 .login-submit:active,
 .login-submit:focus,
@@ -154,8 +108,10 @@ body {
 .register-submit:active,
 .register-submit:focus,
 .register-submit:hover {
-	border-color: #466EB4;
+	border: 2px solid #466EB4;
 	outline: none;
+    transform: scale(1.1);
+    transition: transform 0.1s ease;
 }
 .button-icon {
 	font-size: 24px;
@@ -167,7 +123,7 @@ body {
     height: 140px;
     width: 160px;
     text-align: center;
-    bottom: 20px;
+    bottom: 0px;
     right: 0px;
 }
 .social-icons {
@@ -184,15 +140,17 @@ body {
 }
 .social-login-icon:hover {
 	transform: scale(1.5);
+	cursor: pointer;
 }
 .option {
     position: absolute;
     right: 20px;
-    bottom: 70px;
+    bottom: 30px;
 }
 .option a{
     text-decoration: none;
     color: #fff;
+    cursor: pointer;
 }
 .screen-background {
     position: absolute;
@@ -210,8 +168,8 @@ body {
 }
 .screen-background-shape1 {
 	height: 520px;
-	width: 520px;
-	background: #FFF;
+	width: 620px;
+    background: linear-gradient(90deg, #DBE9F2, #BEDBED);
 	top: -50px;
 	right: 120px;
 	border-radius: 0 72px 0 0;
@@ -239,4 +197,33 @@ body {
 	top: 420px;
 	right: 50px;
 	border-radius: 60px;
+}
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+}
+.close-btn i:hover {
+    color: red;
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 4;
+}
+.screen-login.active ~ .overlay,
+.screen-register.active ~ .overlay {
+    opacity: 1;
+    pointer-events: auto;
 }
