@@ -57,7 +57,7 @@
             {% if decrypted_body %}
             <p>Nội dung đã giải mã:</p>
             <div class="content" contenteditable="true">
-                <span>{{ decrypted_body }}</span>
+                <span>{{ decrypted_body | safe }}</span>
             </div>
             {% elif decryption_error %}
             <p class="error">

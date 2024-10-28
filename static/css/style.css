@@ -21,7 +21,7 @@ body {
     position: fixed;
     height: 600px;
     width: 400px;
-    top: 10vh;
+    top: 12vh;
     left: 50%;
     z-index: 5;
     opacity: 0;
@@ -226,4 +226,64 @@ body {
 .screen-register.active ~ .overlay {
     opacity: 1;
     pointer-events: auto;
+}
+.modal-login,
+.modal-error {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+.modal-content-login,
+.modal-content-error {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    width: 40%;
+    max-width: 500px;
+    text-align: center;
+    animation: fadeIn 0.3s;
+}
+/* Hiệu ứng fade-in cho modal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.modal-content-login h2,
+.modal-content-error h2 {
+    color: #466EB4;
+    margin-bottom: 15px;
+}
+.modal-content-login p,
+.modal-content-error p {
+    color: #333;
+    margin-bottom: 20px;
+}
+.modal-login button,
+.modal-error button {
+    background-color: #466EB4;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-login button:hover,
+.modal-error button:hover {
+    background-color: #BEDBED;
 }
