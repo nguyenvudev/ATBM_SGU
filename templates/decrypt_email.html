@@ -59,13 +59,8 @@
 <!--            </form>-->
 
             {% if decrypted_body %}
-<<<<<<< HEAD
             <p>Nội dung:</p>
             <div class="content" contenteditable="true" >
-=======
-            <p>Nội dung đã giải mã:</p>
-            <div class="content" contenteditable="true">
->>>>>>> 5061e69e558fd86c15fdba15097493f7c048bbf7
                 <span>{{ decrypted_body | safe }}</span>
             </div>
             {% elif decryption_error %}

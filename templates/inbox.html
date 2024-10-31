@@ -197,61 +197,61 @@
                     {% endfor %}
                 </table>
             </div>
-<!--            -->
-<!--            &lt;!&ndash; Thùng rác &ndash;&gt;-->
-<!--            <div class="form-trash-mail">-->
-<!--                <div class="head-trash">-->
-<!--                    <span class="mail-trash">Thùng rác</span>-->
-<!--                    <div class="head-icon">-->
-<!--                        <i class='bx bx-trash' id="delete-icon-3"></i>-->
-<!--                        <i class='bx bx-dots-vertical-rounded'></i>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <table>-->
-<!--                    <tr>-->
-<!--                        <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>-->
-<!--                        <th colspan="3" class="col-trash">-->
-<!--                            Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.-->
-<!--                            <a href="#">Xóa ngay bay giờ</a>-->
-<!--                        </th>-->
-<!--                    </tr>-->
-<!--                    {% for email in emails %}-->
-<!--                    <tr>-->
-<!--                        <td><input type="checkbox" class="email-checkbox-trash"></td>-->
-<!--                        <td class="col-trash-1">{{ email.sender_email }}</td>-->
-<!--                        <td class="col-trash-2">{{ email.subject }}</td>-->
-<!--                        <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>-->
-<!--                    </tr>-->
-<!--                    {% endfor %}-->
-<!--                </table>-->
-<!--            </div>-->
+
+            <!-- Thùng rác -->
+            <div class="form-trash-mail">
+                <div class="head-trash">
+                    <span class="mail-trash">Thùng rác</span>
+                    <div class="head-icon">
+                        <i class='bx bx-trash' id="delete-icon-3"></i>
+                        <i class='bx bx-dots-vertical-rounded'></i>
+                    </div>
+                </div>
+                <table>
+                    <tr>
+                        <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>
+                        <th colspan="3" class="col-trash">
+                            Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.
+                            <a href="#">Xóa ngay bay giờ</a>
+                        </th>
+                    </tr>
+                    {% for email in emails %}
+                    <tr>
+                        <td><input type="checkbox" class="email-checkbox-trash"></td>
+                        <td class="col-trash-1">{{ email.sender_email }}</td>
+                        <td class="col-trash-2">{{ email.subject }}</td>
+                        <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
 <!-- Thùng rác -->
-<div class="form-trash-mail">
-    <div class="head-trash">
-        <span class="mail-trash">Thùng rác</span>
-        <div class="head-icon">
-            <i class='bx bx-trash' id="delete-icon-3" onclick="deleteSelectedTrash()" style="cursor: pointer;"></i>
-            <i class='bx bx-dots-vertical-rounded'></i>
-        </div>
-    </div>
-    <table>
-        <tr>
-            <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>
-            <th colspan="3" class="col-trash">
-                Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.
-                <a href="#">Xóa ngay bay giờ</a>
-            </th>
-        </tr>
-        {% for email in emails %}
-        <tr>
-            <td><input type="checkbox" class="email-checkbox-trash" data-email-id="{{ email.id }}"></td>
-            <td class="col-trash-1">{{ email.sender_email }}</td>
-            <td class="col-trash-2">{{ email.subject }}</td>
-            <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
+<!--<div class="form-trash-mail">-->
+<!--    <div class="head-trash">-->
+<!--        <span class="mail-trash">Thùng rác</span>-->
+<!--        <div class="head-icon">-->
+<!--            <i class='bx bx-trash' id="delete-icon-3" onclick="deleteSelectedTrash()" style="cursor: pointer;"></i>-->
+<!--            <i class='bx bx-dots-vertical-rounded'></i>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <table>-->
+<!--        <tr>-->
+<!--            <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>-->
+<!--            <th colspan="3" class="col-trash">-->
+<!--                Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.-->
+<!--                <a href="#">Xóa ngay bay giờ</a>-->
+<!--            </th>-->
+<!--        </tr>-->
+<!--        {% for email in emails %}-->
+<!--        <tr>-->
+<!--            <td><input type="checkbox" class="email-checkbox-trash" data-email-id="{{ email.id }}"></td>-->
+<!--            <td class="col-trash-1">{{ email.sender_email }}</td>-->
+<!--            <td class="col-trash-2">{{ email.subject }}</td>-->
+<!--            <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>-->
+<!--        </tr>-->
+<!--        {% endfor %}-->
+<!--    </table>-->
+<!--</div>-->
 
             <!-- Soạn thư -->
             <div class="create-mail"> 

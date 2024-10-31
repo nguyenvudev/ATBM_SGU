@@ -1,9 +1,9 @@
 from datetime import datetime
-
+import json
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
-from flask import Flask, render_template, request, redirect, url_for, session , send_from_directory , send_file
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
@@ -367,6 +367,7 @@ def decrypt_email(email_id):
         decryption_error=decryption_error,
         decrypted_attachment_path=decrypted_attachment_path
     )
+
 
 
 @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
