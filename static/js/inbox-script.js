@@ -13,25 +13,43 @@ let sidebar = document.querySelector(".sidebar");
             closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
         }
     }
-
-// Delete icon mail received
+//
+//// Delete icon mail received
+//function toggleDeleteIconReceived() {
+//    let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
+//    let deleteIcon = document.getElementById('delete-icon-1');
+//    deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
+//    }
+//
+//    document.getElementById('select-all-received').addEventListener('change', function(event) {
+//        let checkboxes = document.querySelectorAll('.email-checkbox-received');
+//        checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
+//        toggleDeleteIconReceived();
+//    });
+//
+//    document.querySelectorAll('.email-checkbox-received').forEach(checkbox => {
+//        checkbox.addEventListener('change', toggleDeleteIconReceived);
+//    });
+//
+//    toggleDeleteIconReceived();
 function toggleDeleteIconReceived() {
     let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
     let deleteIcon = document.getElementById('delete-icon-1');
     deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
-    }
+}
 
-    document.getElementById('select-all-received').addEventListener('change', function(event) {
-        let checkboxes = document.querySelectorAll('.email-checkbox-received');
-        checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
-        toggleDeleteIconReceived();
-    });
-
-    document.querySelectorAll('.email-checkbox-received').forEach(checkbox => {
-        checkbox.addEventListener('change', toggleDeleteIconReceived);
-    });
-
+document.getElementById('select-all-received').addEventListener('change', function(event) {
+    let checkboxes = document.querySelectorAll('.email-checkbox-received');
+    checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
     toggleDeleteIconReceived();
+});
+
+document.querySelectorAll('.email-checkbox-received').forEach(checkbox => {
+    checkbox.addEventListener('change', toggleDeleteIconReceived);
+});
+
+toggleDeleteIconReceived();
+
 
 // Delete icon mail send
 function toggleDeleteIconSend() {
@@ -227,4 +245,71 @@ document.getElementById('file-upload').addEventListener('change', function() {
 function updateBody() {
     // Cập nhật giá trị của trường ẩn 'body' từ nội dung của <div id="main">
     document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
+}
+function moveToTrash() {
+    const selectedEmails = document.querySelectorAll('.email-checkbox-received:checked');
+
+    if (selectedEmails.length === 0) {
+        alert('Vui lòng chọn ít nhất một email để xóa.');
+        return;
+    }
+
+    const emailIds = Array.from(selectedEmails).map(checkbox => checkbox.getAttribute('data-email-id'));
+
+    if (confirm('Bạn có chắc chắn muốn chuyển email đã chọn vào Thùng rác?')) {
+        fetch('/move_to_trash', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email_ids: emailIds })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Xóa email khỏi DOM ngay lập tức
+                selectedEmails.forEach(email => {
+                    email.closest('tr').remove(); // Xóa dòng tương ứng với email khỏi DOM
+                });
+            } else {
+                alert('Đã xảy ra lỗi khi chuyển email vào Thùng rác.');
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi:', error);
+        });
+    }
+}
+
+function deleteSelectedTrash() {
+    const selectedEmails = document.querySelectorAll('.email-checkbox-trash:checked');
+
+    if (selectedEmails.length === 0) {
+        alert('Vui lòng chọn ít nhất một email để xóa.');
+        return;
+    }
+
+    const emailIds = Array.from(selectedEmails).map(checkbox => checkbox.getAttribute('data-email-id'));
+
+    if (confirm('Bạn có chắc chắn muốn xóa vĩnh viễn các email đã chọn?')) {
+        fetch('/delete_emails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email_ids: emailIds })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Xóa email khỏi DOM
+                selectedEmails.forEach(email => {
+                    email.closest('tr').remove(); // Xóa dòng tương ứng với email khỏi DOM
+                });
+            } else {
+                alert('Đã xảy ra lỗi khi xóa email.');
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi:', error);
+        });
+    }
 }

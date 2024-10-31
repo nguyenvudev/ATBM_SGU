@@ -10,54 +10,58 @@
 <body>
     <div class="container">
         <div class="form-decode">
-            <h1>Giải Mã Email</h1>
+            <h1>Nội dung Email</h1>
+             <p>Người gửi:
+                <span>{{ sender_email }}</span>
+            </p>
+
             <p>Tiêu đề:
                 <span>{{ email.subject }}</span>
             </p>
 
-            <p>Nội dung đã mã hóa:</p>
-            {% if email.body %}
-            <div class="content-1" contenteditable="true">
-                <span>{{ email.body }}</span>
-            </div>
-            {% else %}
-            <p class="error">Nội dung không có sẵn.</p>
-            {% endif %}
+<!--            <p>Nội dung đã mã hóa:</p>-->
+<!--            {% if email.body %}-->
+<!--            <div class="content-1" contenteditable="true">-->
+<!--                <span>{{ email.body }}</span>-->
+<!--            </div>-->
+<!--            {% else %}-->
+<!--            <p class="error">Nội dung không có sẵn.</p>-->
+<!--            {% endif %}-->
 
-            {% if email.attachment %}
-            <p>Tệp đính kèm đã mã hóa (hex):</p>
-            {% if email.encrypted_attachment_content %}
-            <div class="content-2" contenteditable="true">
-                <span>{{ email.encrypted_attachment_content }}</span>
-            </div>
-            {% else %}
-            <p class="error">Tệp đính kèm không có sẵn.</p>
-            {% endif %}
-            {% endif %}
+<!--            {% if email.attachment %}-->
+<!--            <p>Tệp đính kèm đã mã hóa (hex):</p>-->
+<!--            {% if email.encrypted_attachment_content %}-->
+<!--            <div class="content-2" contenteditable="true">-->
+<!--                <span>{{ email.encrypted_attachment_content }}</span>-->
+<!--            </div>-->
+<!--            {% else %}-->
+<!--            <p class="error">Tệp đính kèm không có sẵn.</p>-->
+<!--            {% endif %}-->
+<!--            {% endif %}-->
 
-            {% if message %}
-                <p class="error">
-                    <span>{{ message }}</span>
-                </p>
-            {% endif %}
+<!--            {% if message %}-->
+<!--                <p class="error">-->
+<!--                    <span>{{ message }}</span>-->
+<!--                </p>-->
+<!--            {% endif %}-->
 
-            <form method="POST" enctype="multipart/form-data" class="form-private-key">
-                <div class="upload-private-key">
-                    <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label>
-                    <div class="upload-icon">
-                        <i class="bx bx-key" id="upload_icon"></i>
-                        <span class="tooltip-text">Chọn khóa riêng</span>
-                        <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required>
-                        <span id="file_name_display"></span>
-                    </div>
-                </div>
-                <button type="submit" name="action" value="decrypt_both">Giải mã</button>
-            </form>
+<!--            <form method="POST" enctype="multipart/form-data" class="form-private-key">-->
+<!--                <div class="upload-private-key">-->
+<!--                    <label for="private_key_file">Tải lên tệp khóa riêng của bạn (.pem):</label>-->
+<!--                    <div class="upload-icon">-->
+<!--                        <i class="bx bx-key" id="upload_icon"></i>-->
+<!--                        <span class="tooltip-text">Chọn khóa riêng</span>-->
+<!--                        <input type="file" id="private_key_file" name="private_key_file" class="form-control" accept=".pem" required>-->
+<!--                        <span id="file_name_display"></span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <button type="submit" name="action" value="decrypt_both">Giải mã</button>-->
+<!--            </form>-->
 
             {% if decrypted_body %}
-            <p>Nội dung đã giải mã:</p>
-            <div class="content" contenteditable="true">
-                <span>{{ decrypted_body }}</span>
+            <p>Nội dung:</p>
+            <div class="content" contenteditable="true" >
+                <span>{{ decrypted_body | safe }}</span>
             </div>
             {% elif decryption_error %}
             <p class="error">
