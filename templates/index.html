@@ -165,6 +165,34 @@
             <span class="screen-background-shape screen-background-shape1"></span>
         </div>
     </div>
+
+    <!-- Modal Thông báo đăng ký thành công -->
+    <div id="successModal" class="modal-login">
+        <div class="modal-content-login">
+            <h2>Đăng ký thành công!</h2>
+            <p>Bạn đã đăng ký thành công. Nhấn "OK" để chuyển đến trang đăng nhập.</p>
+            <button onclick="redirectToLogin()">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal Thông báo lỗi -->
+    <div id="errorModal" class="modal-error">
+        <div class="modal-content-error">
+            <h2>Lỗi đăng ký</h2>
+            <p id="errorMessage"></p>
+            <button onclick="closeErrorModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal Thông báo lỗi khi đăng nhập -->
+    <div id="errorModalLogin" class="modal-error">
+        <div class="modal-content-error">
+            <h2>Lỗi đăng nhập</h2>
+            <p id="errorMessageLogin"></p>
+            <button onclick="closeErrorModalLogin()">OK</button>
+        </div>
+    </div>
+
     <div class="overlay"></div>
     <script src="{{ url_for('static', filename='js/index-script.js') }}"></script>
 </body>
