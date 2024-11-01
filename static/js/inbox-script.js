@@ -1,3 +1,4 @@
+//______Hiển thị______//
 // Đóng mở sidebar
 let sidebar = document.querySelector(".sidebar");
 let closeBtn = document.querySelector("#btn");
@@ -116,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+//_____Delete______//
 // Icon delete thư đến
 function toggleDeleteIconReceived() {
    let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
@@ -173,46 +175,113 @@ document.querySelectorAll('.email-checkbox-trash').forEach(checkbox => {
 
 toggleDeleteIconTrash();
 
-// Chức năng soạn thư
+// Phân trang table
+document.addEventListener('DOMContentLoaded', function() {
+    const rowsPerPage = 13;
+    const table = document.getElementsByClassName('email-table')[0].getElementsByTagName('tbody')[0];
+    const rows = table.getElementsByTagName('tr');
+    const paginationControls = document.getElementById('pagination-controls');
+    let currentPage = 1;
 
+    function displayRows() {
+        const startRow = (currentPage - 1) * rowsPerPage;
+        const endRow = startRow + rowsPerPage;
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].style.display = i >= startRow && i < endRow ? '' : 'none';
+        }
+    }
+
+    function setupPagination() {
+        const pageCount = Math.ceil(rows.length / rowsPerPage);
+        paginationControls.innerHTML = '';
+
+        for (let i = 1; i <= pageCount; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-button');
+            pageButton.addEventListener('click', function() {
+                currentPage = i;
+                displayRows();
+                highlightCurrentPage();
+            });
+            paginationControls.appendChild(pageButton);
+        }
+    }
+
+    function highlightCurrentPage() {
+        const buttons = paginationControls.getElementsByClassName('page-button');
+        for (let button of buttons) {
+            button.style.backgroundColor = button.textContent == currentPage ? '#007BFF' : '#f5f5f5';
+            button.style.color = button.textContent == currentPage ? '#FFF' : '#000';
+        }
+    }
+
+    displayRows();
+    setupPagination();
+    highlightCurrentPage();
+});
+
+//______Chức năng soạn thư______ //
 //  Cập nhật body
 function updateBody() {
     // Cập nhật giá trị của trường ẩn 'body' từ nội dung của <div id="main">
     document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
 }
+document.getElementById('attachment').addEventListener('change', function() {
+    const fileDropdownContainer = document.getElementById('file-dropdown-container');
+    const files = this.files;
 
-// Tệp đính kèm
-let selectedFiles = []; // Khởi tạo mảng để lưu trữ các file đã chọn
+    // Clear any existing dropdown
+    fileDropdownContainer.innerHTML = '';
 
-document.getElementById('attachment').addEventListener('change', function () {
-    const fileList = document.getElementById('file-list');
-    const files = Array.from(this.files); // Lấy danh sách file đã chọn và chuyển thành mảng
+    if (files.length > 0) {
+        // Create a dropdown (select element)
+        const select = document.createElement('select');
+        select.className = 'file-dropdown';
 
-    // Bổ sung các file mới vào mảng selectedFiles
-    selectedFiles = selectedFiles.concat(files);
+        // Create an option for each selected file
+        for (let i = 0; i < files.length; i++) {
+            const option = document.createElement('option');
+            option.value = files[i].name;
+            option.text = files[i].name;
+            select.appendChild(option);
+        }
 
-    // Cập nhật danh sách file hiển thị
-    fileList.innerHTML = ''; // Xóa nội dung cũ
-    const select = document.createElement('select');
-    select.className = 'file-dropdown';
-
-    const defaultOption = document.createElement('option');
-    defaultOption.text = 'Danh sách file';
-    select.appendChild(defaultOption);
-
-    // Lặp qua từng file trong mảng selectedFiles để hiển thị
-    selectedFiles.forEach((file, index) => {
-        const option = document.createElement('option');
-        option.text = file.name;
-        option.value = index; // Lưu trữ chỉ mục của file để xóa nếu cần
-        select.appendChild(option);
-    });
-
-    fileList.appendChild(select);
-
-    // Xóa các file đã chọn sau khi thêm vào mảng để tránh chọn lại khi người dùng nhấp vào input file
-    this.value = '';
+        // Add the dropdown to the container
+        fileDropdownContainer.appendChild(select);
+    }
 });
+
+//______Chức năng đọc thư______//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///////////////////////////////////
 function moveToTrash() {

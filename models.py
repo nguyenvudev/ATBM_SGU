@@ -19,7 +19,7 @@ class EncryptedEmail(db.Model):
     body = db.Column(db.Text, nullable=False)
     aes_key = db.Column(db.Text, nullable=False)
     signature = db.Column(db.Text, nullable=False)
-    attachment = db.Column(db.Text, nullable=True)  # Add this line
+    attachments = db.Column(db.Text, nullable=True)  # Add this line
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     encrypted_attachment_content = db.Column(db.Text, nullable=True)
     is_deleted = db.Column(db.Boolean, default=False)

@@ -477,6 +477,29 @@ th {
     transition: transform 0.1s ease;
     color: #466EB4;
 }
+#pagination-controls {
+    margin-top: 10px;
+    left: 0px;
+    right: 0px;
+    text-align: center;
+    position: fixed;
+    bottom: 5px
+}
+#pagination-controls .page-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    border-radius: 4px;
+    outline: none;
+}
+#pagination-controls .page-button:hover {
+    background-color: #ddd;
+}
+#pagination-controls .page-button:focus {
+    outline: none;
+}
 
 /* ___Form Mail Received___ */
 .form-mail-received {
@@ -662,7 +685,7 @@ th {
     height: 60px;
     width: calc(100% - 30px);
     margin-left: 15px;
-    margin-top: 10px;
+    margin-top: 20px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -682,29 +705,36 @@ th {
     font-size: 20px;
     color: #fff;
 }
-.footer-create-mail label i {
-    font-size: 28px;
+.footer-create-mail i {
+    font-size: 24px;
     cursor: pointer;
 }
-.footer-create-mail label i:hover {
+.footer-create-mail i:hover {
     transform: scale(1.1);
 }
 .file-dropdown {
     width: 300px;
     height: 30px;
-    padding: 5px;
-    font-size: 16px;
-    border: 1px solid #ddd;
+    padding-left: 10px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: #fff;
+    appearance: none;
     cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
-.file-dropdown:hover {
-    border-color: #466EB4;
-}
-.file-dropdown:focus {
-    border-color: #466EB4;
-    outline: none;
+.file-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+    border-color: #007BFF transparent transparent transparent;
+    pointer-events: none;
+    transform: translateY(-50%);
 }
 /* ___Reponsive___ */
 @media (max-width: 420px) {

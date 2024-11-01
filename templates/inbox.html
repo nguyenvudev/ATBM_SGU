@@ -7,6 +7,7 @@
     <title>Inbox</title>
     <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/decode.css') }}">
 </head>
 <body>
     <div class="container">
@@ -48,7 +49,7 @@
                 </li>
                 <li class="log-out">
                     <a href="{{ url_for('logout') }}">
-                        <i class="bx bx-log-out" id="log-out"></i> 
+                        <i class="bx bx-log-out" id="log-out"></i>
                     </a>
                 </li>
             </ul>
@@ -83,7 +84,7 @@
                             <button>Đổi mật khẩu</button>
                         </div>
                     </form>
-                    <form action="{{ url_for('recover_private_key') }}" method="POST" class="form-recover-key">
+                    <form action="{{ url_for('change_password') }}" method="POST" class="form-recover-key">
                         <div class="content-recover-key">
                             <div class="info-recover-key">
                                 <div class="close-recover-key">
@@ -94,7 +95,10 @@
                                     <img src="{{ url_for('static', filename='img/recovery.png') }}" alt="">
                                 </div>
                                 <div>
-                                    <input type="password" id="email" name="email" placeholder="Nhập mật khẩu cũ" required />
+                                    <input type="email" id="email" name="email" placeholder="abc@gmail.com" required />
+                                </div>
+                                <div>
+                                    <input type="password" id="ex-password" name="ex-password" placeholder="Nhập mật khẩu cũ" required />
                                 </div>
                                 <div>
                                     <input type="password" id="password" name="password" placeholder="Nhập mật khẩu mới" required />
@@ -111,35 +115,52 @@
                 </div>
             </div>
 
-            <!--Hộp thư đến-->
+            <!-- Thư đến -->
             <div class="form-mail-received">
                 <div class="head-received">
                     <span class="mail-received">Hộp thư đến</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash()" style="cursor: pointer;"></i> <!-- Thêm onclick -->
+                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash()" style="cursor: pointer;"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
-                <table>
-                    <tr>
-                        <th class="col-checkbox"><input type="checkbox" id="select-all-received"></th>
-                        <th>Người gửi</th>
-                        <th>Chủ đề</th>
-                        <th>Thời gian</th>
-                        <th class="col-action">Hành động</th>
-                    </tr>
-                    {% for email in received_emails %}
-                    <tr>
-                        <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
-                        <td>{{ email.sender_email }}</td>
-                        <td>{{ email.subject }}</td>
-                        <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td class="decode">
-                            <a href="{{ url_for('decrypt_email', email_id=email.id) }}" onclick="showDecode()" class="btn-show-decode"><i class="bx bx-key"></i></a>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                <table class="email-table">
+                    <thead>
+                        <tr>
+                            <th class="col-checkbox"><input type="checkbox" id="select-all-received"></th>
+                            <th>Người gửi</th>
+                            <th>Chủ đề</th>
+                            <th>Thời gian</th>
+                            <th>Nội dung (Giới hạn)</th>
+                            <th>Tệp đính kèm</th>
+                            <th class="col-action">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in received_emails %}
+                        <tr>
+                            <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
+                            <td>{{ email.sender_email }}</td>
+                            <td>{{ email.subject }}</td>
+                            <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <!-- Nội dung đã giải mã, giới hạn số từ -->
+                            <td>{{ email.decrypted_body | truncate(50) }}</td>
+                            <!-- Hiển thị tệp đính kèm -->
+                            <td>
+                                {% if email.attachment %}
+                                    <a href="{{ url_for('download_decrypted_file', email_id=email.id) }}" download>{{ email.attachment.filename }}</a>
+                                {% else %}
+                                    Không có tệp
+                                {% endif %}
+                            </td>
+                            <td class="decode">
+                                <a href="{{ url_for('decrypt_email', email_id=email.id) }}" onclick="showDecode()" class="btn-show-decode"><i class="bx bx-key"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
+                <div id="pagination-controls"></div>
             </div>
 
             <!-- Thư đã gửi -->
@@ -151,23 +172,27 @@
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
-                <table>
-                    <tr>
-                        <th class="col-checkbox"><input type="checkbox" id="select-all-send"></th>
-                        <th>Người nhận</th>
-                        <th>Chủ đề</th>
-                        <th>Thời gian</th>
-                        <th class="col-action">Hành động</th>
-                    </tr>
-                    {% for email in sent_emails %}
-                    <tr>
-                        <td><input type="checkbox" class="email-checkbox-send"></td>
-                        <td>{{ email.receiver_email }}</td>
-                        <td>{{ email.subject }}</td>
-                        <td>{{ email.local_time }}</td>
-                        <td class="see"><a onclick="showDetails()" class="btn-show-details"><i class="bx bx-envelope-open"></i></a></td>
-                    </tr>
-                    {% endfor %}
+                <table class="email-table">
+                    <thead>
+                        <tr>
+                            <th class="col-checkbox"><input type="checkbox" id="select-all-send"></th>
+                            <th>Người nhận</th>
+                            <th>Chủ đề</th>
+                            <th>Thời gian</th>
+                            <th class="col-action">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in sent_emails %}
+                        <tr>
+                            <td><input type="checkbox" class="email-checkbox-send"></td>
+                            <td>{{ email.receiver_email }}</td>
+                            <td>{{ email.subject }}</td>
+                            <td>{{ email.local_time }}</td>
+                            <td class="see"><a onclick="showDetails()" class="btn-show-details"><i class="bx bx-envelope-open"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
 
@@ -180,35 +205,39 @@
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
-                <table>
-                    <tr>
-                        <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>
-                        <th colspan="3" class="col-trash">
-                            Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.
-                            <a href="#">Xóa ngay bay giờ</a>
-                        </th>
-                    </tr>
-                    {% for email in emails %}
-                    <tr>
-                        <td><input type="checkbox" class="email-checkbox-trash"></td>
-                        <td class="col-trash-1">{{ email.sender_email }}</td>
-                        <td class="col-trash-2">{{ email.subject }}</td>
-                        <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    </tr>
-                    {% endfor %}
+                <table class="email-table">
+                    <thead>
+                        <tr>
+                            <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>
+                            <th colspan="3" class="col-trash">
+                                Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.
+                                <a href="#">Xóa ngay bay giờ</a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in emails %}
+                        <tr>
+                            <td><input type="checkbox" class="email-checkbox-trash"></td>
+                            <td class="col-trash-1">{{ email.sender_email }}</td>
+                            <td class="col-trash-2">{{ email.subject }}</td>
+                            <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
 
             <!-- Soạn thư -->
-            <div class="create-mail"> 
+            <div class="create-mail">
                 <form action="{{ url_for('send_email') }}" class="form-create-mail" method="POST" enctype="multipart/form-data" onsubmit="updateBody()">
                     <div class="head-create-mail">
                         <p class="title-head-create-mail">Thư mới</p>
                         <div class="create-mail-icon">
-                            <i class='bx bx-x' id="close-compose"></i> 
+                            <i class='bx bx-x' id="close-compose"></i>
                         </div>
                     </div>
-            
+
                     <input type="email" name="recipient" id="recipient" class="form-control" placeholder="Người nhận" required />
                     <input type="text" name="subject" id="subject" class="form-control" placeholder="Tiêu đề" required />
                     <div id="main" class="form-control-main" contenteditable="true" style="overflow: auto;"></div>
@@ -217,15 +246,19 @@
                     <div class="footer-create-mail">
                         <button type="submit">Gửi</button>
                         <label for="attachment" class="file-label">
-                            <i class="bx bx-file"></i>
+                            <i class='bx bx-file'></i>
                         </label>
-                        <div id="file-list"></div>
-                        <input type="file" id="attachment" name="attachment" style="display: none;" multiple>
+                        <input type="file" id="attachment" name="attachment" multiple style="display: none;">
+                        <div id="file-dropdown-container"></div>
                     </div>
                 </form>
-            </div> 
+            </div>
+
+            <!-- Form đọc thư -->
+
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/decrypt-email.js') }}"></script>
 </body>
 </html>

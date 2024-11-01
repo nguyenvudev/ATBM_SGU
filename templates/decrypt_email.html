@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -78,6 +78,65 @@
                 <span class="tooltip-text">Tải tệp đính kèm</span>
             </div>
             {% endif %}
+
+            <div class="footer-icon">
+                <a href="{{ url_for('inbox') }}">
+                    <i class="bx bx-exit"></i>
+                </a>
+                <span class="tooltip-text">Quay lại hộp thư</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/decrypt-email.js') }}"></script>
+</body>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải Mã Email</title>
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/decode.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-decode">
+            <h1>Nội dung Email</h1>
+             <p>Người gửi:
+                <span>{{ sender_email }}</span>
+            </p>
+
+            <p>Tiêu đề:
+                <span>{{ email.subject }}</span>
+            </p>
+
+            {% if decrypted_body %}
+            <p>Nội dung:</p>
+            <div class="content" contenteditable="true" >
+                <span>{{ decrypted_body | safe }}</span>
+            </div>
+
+            {% elif decryption_error %}
+            <p class="error">
+                Không thể giải mã nội dung. Vui lòng kiểm tra khóa riêng của bạn.
+            </p>
+            {% endif %}
+
+                    {% if decrypted_attachments %}
+                        <p>Tệp đính kèm:</p>
+                        {% for attachment in decrypted_attachments %}
+                            <div class="footer-icon">
+                                <a href="{{ url_for('download_decrypted_file', file_path=attachment['path']) }}" download>
+                                    <i class="bx bx-download"></i> {{ attachment['filename'] }}
+                                </a>
+                                <span class="tooltip-text">Tải xuống</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
 
             <div class="footer-icon">
                 <a href="{{ url_for('inbox') }}">
