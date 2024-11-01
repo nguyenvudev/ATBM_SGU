@@ -371,6 +371,12 @@
 .info-recover-key img {
     width: 50px;
 }
+.close-recover-key {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: -25px;
+    margin-top: -10px
+}
 .head-recover-key {
     display: flex;
     justify-content: center;
@@ -382,17 +388,13 @@
     font-size: 24px;
 }
 .info-recover-key {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 10px;
     padding: 15px 30px 15px 30px;
     font-size: 24px;
 }
 .info-recover-key div input {
     width: 250px;
     height: 40px;
+    margin-bottom: 10px;
     border: none;
     border-bottom: 2px solid #BEDBED;
     background: #DBE9F2;
@@ -403,15 +405,22 @@
     outline: none;
     border-color: #466EB4;
 }
-.info-recover-key button {
+.button-submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.button-submit button {
     padding: 10px 30px;
     margin-top: 10px;
     background: #DBE9F2;
     border-radius: 20px;
     border: 1px solid #8b8b8b;
 }
-.info-recover-key button:hover {
+.button-submit button:hover {
     cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
     background: #BEDBED;
     transform: scale(1.1);
     transition: transform 0.1s ease;
@@ -655,7 +664,7 @@ th {
     margin-left: 15px;
     margin-top: 10px;
     display: flex;
-    align-items:flex-end;
+    align-items: center;
     justify-content: flex-start;
     gap: 10px;
 }
@@ -672,6 +681,30 @@ th {
     background: #466EB4;
     font-size: 20px;
     color: #fff;
+}
+.footer-create-mail label i {
+    font-size: 28px;
+    cursor: pointer;
+}
+.footer-create-mail label i:hover {
+    transform: scale(1.1);
+}
+.file-dropdown {
+    width: 300px;
+    height: 30px;
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+}
+.file-dropdown:hover {
+    border-color: #466EB4;
+}
+.file-dropdown:focus {
+    border-color: #466EB4;
+    outline: none;
 }
 /* ___Reponsive___ */
 @media (max-width: 420px) {
