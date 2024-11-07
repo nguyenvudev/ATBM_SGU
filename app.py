@@ -13,6 +13,7 @@ import os
 from models import db, User, EncryptedEmail
 from flask import redirect, url_for, session, render_template
 import pytz
+from flask import jsonify, request
 from utils import (
     generate_keys,
     serialize_keys,
@@ -226,6 +227,8 @@ def send_email():
 
     return render_template('send_email.html')
 
+
+
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
     if 'user_id' not in session:
@@ -236,62 +239,124 @@ def decrypt_email(email_id):
     decrypted_attachments = []
     decryption_error = None
 
-    # Kiểm tra người gửi và người nhận email
     is_sent_email = email.sender_id == session['user_id']
     if is_sent_email:
-        # Trường hợp email do người dùng gửi
-        message = "Đây là email bạn đã gửi. Không cần giải mã."
-        return render_template(
-            'decrypt_email.html',
-            email=email,
-            message=message,
-            decrypted_attachments=decrypted_attachments
-        )
+        return jsonify({
+            'message': "Đây là email bạn đã gửi. Không cần giải mã.",
+            'subject': email.subject,
+            'sender_email': None,
+            'decrypted_body': None,
+            'decrypted_attachments': []
+        })
 
-    # Tiếp tục giải mã nếu email là email nhận
     sender = User.query.get(email.sender_id)
     try:
-        # Lấy khóa riêng tư từ session
         private_key = session.get('private_key')
         if not private_key:
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
-        # Giải mã khóa AES
         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
 
-        # Giải mã nội dung email
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8')
 
-        # Giải mã tệp đính kèm nếu có
-        attachments = json.loads(email.attachments)  # Lấy danh sách JSON các tệp đính kèm
+        attachments = json.loads(email.attachments)
         for attachment in attachments:
             encrypted_data = bytes.fromhex(attachment['content'])
             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
 
-            # Write decrypted file to disk
             with open(decrypted_attachment_path, 'wb') as decrypted_file:
                 decrypted_file.write(decrypted_attachment)
 
             clean_filename = basename(decrypted_attachment_path).replace("decrypted_", "").replace("encrypted_", "")
-            decrypted_attachments.append({'path': decrypted_attachment_path, 'filename': clean_filename})
+            decrypted_attachments.append({
+                'path': url_for('download_decrypted_file', file_path=decrypted_attachment_path),
+                'filename': clean_filename
+            })
 
     except Exception as e:
         decryption_error = f"Giải mã thất bại: {str(e)}"
 
-    return render_template(
-        'decrypt_email.html',
-        email=email,
-        sender_email=sender.email,
-        decrypted_body=decrypted_body,
-        decryption_error=decryption_error,
-        decrypted_attachments=decrypted_attachments
-    )
+    return jsonify({
+        'subject': email.subject,
+        'sender_email': sender.email if sender else "Không xác định",
+        'decrypted_body': decrypted_body,
+        'decryption_error': decryption_error,
+        'decrypted_attachments': decrypted_attachments
+    })
+
+
+# @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
+# def decrypt_email(email_id):
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+#
+#     email = EncryptedEmail.query.get_or_404(email_id)
+#     decrypted_body = None
+#     decrypted_attachments = []
+#     decryption_error = None
+#
+#     # Kiểm tra người gửi và người nhận email
+#     is_sent_email = email.sender_id == session['user_id']
+#     if is_sent_email:
+#         # Trường hợp email do người dùng gửi
+#         message = "Đây là email bạn đã gửi. Không cần giải mã."
+#         return render_template(
+#             'inbox.html',
+#             email=email,
+#             message=message,
+#             decrypted_attachments=decrypted_attachments
+#         )
+#
+#     # Tiếp tục giải mã nếu email là email nhận
+#     sender = User.query.get(email.sender_id)
+#     try:
+#         # Lấy khóa riêng tư từ session
+#         private_key = session.get('private_key')
+#         if not private_key:
+#             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
+#
+#         # Giải mã khóa AES
+#         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+#         if decrypted_aes_key is None:
+#             raise ValueError("Giải mã khóa AES không thành công.")
+#
+#         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+#
+#         # Giải mã nội dung email
+#         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
+#         decrypted_body = decrypted_body_bytes.decode('utf-8')
+#
+#         # Giải mã tệp đính kèm nếu có
+#         attachments = json.loads(email.attachments)  # Lấy danh sách JSON các tệp đính kèm
+#         for attachment in attachments:
+#             encrypted_data = bytes.fromhex(attachment['content'])
+#             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
+#             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
+#
+#             # Write decrypted file to disk
+#             with open(decrypted_attachment_path, 'wb') as decrypted_file:
+#                 decrypted_file.write(decrypted_attachment)
+#
+#             clean_filename = basename(decrypted_attachment_path).replace("decrypted_", "").replace("encrypted_", "")
+#             decrypted_attachments.append({'path': decrypted_attachment_path, 'filename': clean_filename})
+#
+#     except Exception as e:
+#         decryption_error = f"Giải mã thất bại: {str(e)}"
+#
+#     return render_template(
+#         'inbox.html',
+#         email=email,
+#         sender_email=sender.email,
+#         decrypted_body=decrypted_body,
+#         decryption_error=decryption_error,
+#         decrypted_attachments=decrypted_attachments
+#     )
 
 @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
 def download_attachment(email_id):

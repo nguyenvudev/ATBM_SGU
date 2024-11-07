@@ -253,6 +253,111 @@ document.getElementById('attachment').addEventListener('change', function() {
 });
 
 //______Chức năng đọc thư______//
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.btn-show-decode').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            event.preventDefault();
+            const url = this.href;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Response data:", data);
+
+                    // Create and insert the form content dynamically
+                    const formDecode = document.getElementById('formDecode');
+                    if (!formDecode) {
+                        console.error("formDecode element not found.");
+                        return;
+                    }
+                    // Add content to the form
+                    formDecode.innerHTML = `
+                        <h1>Nội dung Email</h1>
+                        <p>Người gửi: <span>${data.sender_email}</span></p>
+                        <p>Tiêu đề: <span>${data.subject}</span></p>
+
+                        ${data.decrypted_body ? `
+                        <p>Nội dung:</p>
+                        <div class="content">
+                            <span>${data.decrypted_body}</span>
+                        </div>` : '<p>Không có nội dung giải mã.</p>'}
+
+                        ${data.decrypted_attachments && data.decrypted_attachments.length > 0 ? `
+                        <p>Tệp đính kèm:</p>
+                        ${data.decrypted_attachments.map(attachment => `
+                        <div class="merge-file">
+                            <div class="form-file">
+                                <div class="line"></div>
+                                <a href="${attachment.path}" download>
+                                    ${getIconByFileExtension(attachment.filename)}
+                                    ${attachment.filename}
+                                </a>
+                                <div class="corner-triangle"></div>
+                            </div>`).join('')}` : '<p>Không có tệp đính kèm.</p>'}
+                        </div>
+
+                        <div class="position-end-decode">
+                            <div class="end-decode">
+                                <div class="rep-mail">
+                                    <button type="submit">Trả lời</button>
+                                    <button type="submit">Chuyển tiếp</button>
+                                </div>
+                                <div class="footer-icon">
+                                    <a>
+                                        <button type="button" id="closeFormDecode">Quay lại</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Set up the close button to hide the form
+                    const closeButton = document.getElementById('closeFormDecode');
+                    if (closeButton) {
+                        closeButton.addEventListener('click', hideFormDecode);
+                    }
+
+                    showFormDecode();  // Show the form
+
+                    function getIconByFileExtension(filename) {
+                        const ext = filename.split('.').pop().toLowerCase();
+                        switch (ext) {
+                            case 'pdf': return '<i class="bx bxs-file-pdf" style="color: red"></i>';
+                            case 'xlsx': return '<i class="fa fa-file-excel" style="color: green"></i>';
+                            case 'txt': return '<i class="bx bxs-file-txt"></i>';
+                            case 'doc': case 'docx': return '<i class="bx bxs-file-doc" style="color: blue"></i>';
+                            case 'zip': return '<i class="bx bxs-file-archive"></i>';
+                            default: return '<i class="bx bxs-file"></i>';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+    });
+
+});
+
+function showFormDecode() {
+    const formDecode = document.getElementById('formDecode');
+    if (formDecode) {  // Ensure the element exists
+        formDecode.style.opacity = "1";
+        formDecode.style.visibility = "visible";
+        formDecode.style.transform = "scale(1)";
+    } else {
+        console.error("formDecode element not found.");
+    }
+}
+
+function hideFormDecode() {
+    const formDecode = document.getElementById('formDecode');
+    if (formDecode) {  // Ensure the element exists before trying to hide it
+        formDecode.style.opacity = "0";
+        formDecode.style.visibility = "hidden";
+        formDecode.style.transform = "scale(0)";
+    } else {
+        console.error("formDecode element not found.");
+    }
+}
 
 
 

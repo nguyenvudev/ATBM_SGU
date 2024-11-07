@@ -736,6 +736,121 @@ th {
     pointer-events: none;
     transform: translateY(-50%);
 }
+
+/* ___Form Decode___ */
+.form-decode {
+    position: absolute;
+    background: #fff;
+    margin-left: 10px;
+    width: calc(100% - 20px);
+    height: 90vh;
+    top: 10vh;
+    z-index: 96;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.form-decode.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.form-decode h1 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 600;
+    padding-top: 10px;
+}
+.form-decode p {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 15px;
+}
+.form-decode span {
+    font-weight: normal;
+}
+.form-decode .error {
+    font-style: italic;
+    color: red; /* Màu đỏ cho thông báo lỗi */
+}
+.content {
+    margin: 0px 15px;
+    padding: 5px 5px;
+    height: 200px;
+    font-size: 18px;
+}
+.merge-file {
+    display: flex;
+    gap: -5px;
+}
+.line {
+    position: absolute;
+    border: 1px solid lightgray;
+    width: 199px;
+    bottom: 21px;
+}
+.form-file {
+    position: relative;
+    border: 1px solid lightgray;
+    margin: 10px 15px;
+    width: 200px;
+    height: 150px;
+    display: flex;
+    align-items: flex-end;
+}
+.form-file a {
+    display: inline-block;
+    margin-left: 5px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    text-decoration: none;
+    color: black;
+}
+.corner-triangle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    transform: rotate(270deg);
+    border-left: 20px solid transparent;
+    border-top: 20px solid ;
+}
+.position-end-decode {
+    position: absolute;
+    left: 0px;
+    bottom: 5px;
+}
+.end-decode {
+    display: flex;
+    align-items: center;
+}
+.rep-mail {
+    margin: 10px 15px;
+}
+.rep-mail button,
+.footer-icon button {
+    width: 150px;
+    font-size: 15px;
+    padding: 10px 15px;
+    border-radius: 15px;
+    border: 1px solid lightgray;
+    background: #fff;
+}
+.rep-mail button:hover,
+.footer-icon button:hover {
+    cursor: pointer;
+    background: lightgray;
+    border-color: #BEDBED;
+}
 /* ___Reponsive___ */
 @media (max-width: 420px) {
     .sidebar li .tooltip{
