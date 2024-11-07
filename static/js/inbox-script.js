@@ -18,16 +18,19 @@ function menuBtnChange() {
 
 // Hiển thị
 document.addEventListener("DOMContentLoaded", function() {
-    // Lấy các phần tử
+    // Lấy các phần tử nút
     const mailCreateBtn = document.querySelector('.mail-create');
     const mailReceivedBtn = document.querySelector('.mail-received');
     const mailSendBtn = document.querySelector('.mail-send');
     const mailTrashBtn = document.querySelector('.mail-trash');
+    const mailRepBtn = document.querySelector('.btn-rep');
+    const mailForwardBtn = document.querySelector('.btn-forward-email');
 
     const formMailCreate = document.querySelector('.form-create-mail');
     const formMailReceived = document.querySelector('.form-mail-received');
     const formMailSend = document.querySelector('.form-mail-send');
     const formMailTrash = document.querySelector('.form-trash-mail');
+
     const formRecoverKey = document.querySelector('.form-recover-key');
     const closeComposeIcon = document.getElementById('close-compose');
     const closeRecoverKey = document.getElementById('close-change');
@@ -65,8 +68,29 @@ document.addEventListener("DOMContentLoaded", function() {
         formMailCreate.classList.toggle('active');
     });
 
+    mailRepBtn?.addEventListener('click', function() {
+        formMailCreate.classList.add('active');
+        document.getElementById('subject').value = '';
+        document.getElementById('main').innerText = '';
+        // Điền thông tin vào form "create-mail"
+        document.getElementById('recipient').value = document.getElementById('senderEmail').innerText;
+    });
+
+    mailForwardBtn?.addEventListener('click', function() {
+        formMailCreate.classList.add('active');
+        document.getElementById('recipient').value = '';
+        // Điền thông tin vào form "create-mail"
+        document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectEmail').innerText;
+        document.getElementById('main').innerText =  document.getElementById('decryptedBody').innerText;
+    });
+
     function closeCreateMail() {
         formMailCreate.classList.remove('active');
+
+        // Xóa các giá trị đã nhập
+        document.getElementById('recipient').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('main').innerText = '';
     }
     closeComposeIcon?.addEventListener('click', closeCreateMail);
 
@@ -97,9 +121,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Đóng form khi nhấp ra ngoài
     document.addEventListener('click', function(event) {
-        if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
-            closeCreateMail();
-        }
+//        if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
+//            closeCreateMail();
+//        }
         if (!formRecoverKey.contains(event.target) && !event.target.closest('.recover-key')) {
             closeFormRecoverKey();
         }
@@ -222,35 +246,72 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 //______Chức năng soạn thư______ //
+
 //  Cập nhật body
 function updateBody() {
     // Cập nhật giá trị của trường ẩn 'body' từ nội dung của <div id="main">
     document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
 }
-document.getElementById('attachment').addEventListener('change', function() {
-    const fileDropdownContainer = document.getElementById('file-dropdown-container');
-    const files = this.files;
 
-    // Clear any existing dropdown
-    fileDropdownContainer.innerHTML = '';
+// Cập nhật nội dung không bị lỗi div/br
+document.addEventListener("DOMContentLoaded", function() {
+    const mainDiv = document.getElementById('main');
 
-    if (files.length > 0) {
-        // Create a dropdown (select element)
-        const select = document.createElement('select');
-        select.className = 'file-dropdown';
+    // Thiết lập sự kiện input để xử lý mỗi khi người dùng nhập liệu
+    mainDiv.addEventListener('input', function(event) {
+        // Có thể điều chỉnh các thuộc tính hoặc xử lý nội dung tại đây nếu cần
+    });
 
-        // Create an option for each selected file
-        for (let i = 0; i < files.length; i++) {
-            const option = document.createElement('option');
-            option.value = files[i].name;
-            option.text = files[i].name;
-            select.appendChild(option);
-        }
+    // Đặt focus vào phần tử khi người dùng click vào nó
+    mainDiv.addEventListener('click', function(event) {
+        mainDiv.focus();
+    });
 
-        // Add the dropdown to the container
-        fileDropdownContainer.appendChild(select);
-    }
+    // Thiết lập các thuộc tính khi phần tử được focus
+    mainDiv.addEventListener('focus', function(event) {
+        mainDiv.style.outline = 'none'; // Loại bỏ viền mặc định khi focus
+    });
+
+    // Mẫu nội dung ban đầu
+    const content = "";
+    mainDiv.innerHTML = content.replace(/\n/g, '<br/>');
 });
+
+// Gửi nhiều file
+let selectedFiles = []; // Array to store all selected files
+
+document.getElementById('attachment').addEventListener('change', function() {
+    const newFiles = Array.from(this.files);
+
+    // Add each new file only if it doesn't already exist in selectedFiles
+    newFiles.forEach(file => {
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+        }
+    });
+
+    // Use DataTransfer to update the input's file list with all selected files
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    this.files = dataTransfer.files;
+
+    // Update the dropdown with all selected files
+    const fileDropdownContainer = document.getElementById('file-dropdown-container');
+    fileDropdownContainer.innerHTML = ''; // Clear existing dropdown
+
+    const select = document.createElement('select');
+    select.className = 'file-dropdown';
+
+    selectedFiles.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file.name;
+        option.text = file.name;
+        select.appendChild(option);
+    });
+
+    fileDropdownContainer.appendChild(select);
+});
+
 
 //______Chức năng đọc thư______//
 document.addEventListener("DOMContentLoaded", function() {
@@ -264,60 +325,49 @@ document.addEventListener("DOMContentLoaded", function() {
                 .then(data => {
                     console.log("Response data:", data);
 
-                    // Create and insert the form content dynamically
-                    const formDecode = document.getElementById('formDecode');
-                    if (!formDecode) {
-                        console.error("formDecode element not found.");
-                        return;
+                    // Fill the form with data
+                    document.getElementById('senderEmail').innerText = data.sender_email;
+                    document.getElementById('subjectEmail').innerText = data.subject;
+
+                    if (data.decrypted_body) {
+                        document.getElementById('decryptedBody').innerText = data.decrypted_body;
+                        document.getElementById('bodyContent').style.display = 'block';
+                        document.getElementById('noDecryptedBody').style.display = 'none';
+                    } else {
+                        document.getElementById('bodyContent').style.display = 'none';
+                        document.getElementById('noDecryptedBody').style.display = 'block';
                     }
-                    // Add content to the form
-                    formDecode.innerHTML = `
-                        <h1>Nội dung Email</h1>
-                        <p>Người gửi: <span>${data.sender_email}</span></p>
-                        <p>Tiêu đề: <span>${data.subject}</span></p>
 
-                        ${data.decrypted_body ? `
-                        <p>Nội dung:</p>
-                        <div class="content">
-                            <span>${data.decrypted_body}</span>
-                        </div>` : '<p>Không có nội dung giải mã.</p>'}
-
-                        ${data.decrypted_attachments && data.decrypted_attachments.length > 0 ? `
-                        <p>Tệp đính kèm:</p>
-                        ${data.decrypted_attachments.map(attachment => `
-                        <div class="merge-file">
-                            <div class="form-file">
-                                <div class="line"></div>
-                                <a href="${attachment.path}" download>
-                                    ${getIconByFileExtension(attachment.filename)}
-                                    ${attachment.filename}
-                                </a>
-                                <div class="corner-triangle"></div>
-                            </div>`).join('')}` : '<p>Không có tệp đính kèm.</p>'}
-                        </div>
-
-                        <div class="position-end-decode">
-                            <div class="end-decode">
-                                <div class="rep-mail">
-                                    <button type="submit">Trả lời</button>
-                                    <button type="submit">Chuyển tiếp</button>
+                    if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
+                        let attachmentsHTML = '';
+                        data.decrypted_attachments.forEach(attachment => {
+                            attachmentsHTML += `
+                                <div class="merge-file">
+                                    <div class="form-file">
+                                        <div class="line"></div>
+                                            <a href="${attachment.path}" download>
+                                                ${getIconByFileExtension(attachment.filename)}
+                                                ${attachment.filename}
+                                            </a>
+                                        <div class="corner-triangle"></div>
+                                    </div>
                                 </div>
-                                <div class="footer-icon">
-                                    <a>
-                                        <button type="button" id="closeFormDecode">Quay lại</button>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                            `;
+                        });
+                        document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
+                        document.getElementById('attachmentsContent').style.display = 'block';
+                        document.getElementById('noAttachmentsContent').style.display = 'none';
+                    } else {
+                        document.getElementById('attachmentsContent').style.display = 'none';
+                        document.getElementById('noAttachmentsContent').style.display = 'block';
+                    }
 
-                    // Set up the close button to hide the form
                     const closeButton = document.getElementById('closeFormDecode');
                     if (closeButton) {
                         closeButton.addEventListener('click', hideFormDecode);
                     }
 
-                    showFormDecode();  // Show the form
+                    showFormDecode(); // Show the form
 
                     function getIconByFileExtension(filename) {
                         const ext = filename.split('.').pop().toLowerCase();
@@ -334,36 +384,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 .catch(error => console.error('Error fetching data:', error));
         });
     });
-
+    function hideFormDecode() {
+        const formDecode = document.getElementById('formDecode');
+        if (formDecode) {
+            formDecode.classList.remove('show');
+        }
+    }
+    function showFormDecode() {
+        const formDecode = document.getElementById('formDecode');
+        if (formDecode) {
+            formDecode.classList.add('show');
+        }
+    }
 });
-
-function showFormDecode() {
-    const formDecode = document.getElementById('formDecode');
-    if (formDecode) {  // Ensure the element exists
-        formDecode.style.opacity = "1";
-        formDecode.style.visibility = "visible";
-        formDecode.style.transform = "scale(1)";
-    } else {
-        console.error("formDecode element not found.");
-    }
-}
-
-function hideFormDecode() {
-    const formDecode = document.getElementById('formDecode');
-    if (formDecode) {  // Ensure the element exists before trying to hide it
-        formDecode.style.opacity = "0";
-        formDecode.style.visibility = "hidden";
-        formDecode.style.transform = "scale(0)";
-    } else {
-        console.error("formDecode element not found.");
-    }
-}
-
-
-
-
-
-
 
 
 
