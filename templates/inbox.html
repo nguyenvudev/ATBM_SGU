@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inbox</title>
-    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
 </head>
@@ -231,7 +231,7 @@
             </div>
 
             <!-- Soạn thư -->
-            <div class="create-mail">
+            <div class="create-mail" id="create-mail">
                 <form action="{{ url_for('send_email') }}" class="form-create-mail" method="POST" enctype="multipart/form-data" onsubmit="updateBody()">
                     <div class="head-create-mail">
                         <p class="title-head-create-mail">Thư mới</p>
@@ -242,7 +242,7 @@
 
                     <input type="email" name="recipient" id="recipient" class="form-control" placeholder="Người nhận" required />
                     <input type="text" name="subject" id="subject" class="form-control" placeholder="Tiêu đề" required />
-                    <div id="main" class="form-control-main" contenteditable="true" style="overflow: auto;"></div>
+                    <div id="main" class="form-control-main" contenteditable="true"></div>
                     <input type="hidden" name="body" id="hidden-body" required />
 
                     <div class="footer-create-mail">
@@ -256,66 +256,44 @@
                 </form>
             </div>
 
-            <div class="form-decode" id="formDecode" >
-<!--                <h1>Nội dung Email</h1>-->
-<!--                {% if email %}-->
-<!--                <p>Người gửi: <span>{{ sender_email }}</span></p>-->
-<!--                <p>Tiêu đề: <span>{{ email.subject }}</span></p>-->
-
-<!--                {% if decrypted_body %}-->
-<!--                <p>Nội dung:</p>-->
-<!--                <div class="content">-->
-<!--                    <span>{{ decrypted_body | safe }}</span>-->
-<!--                </div>-->
-<!--                {% endif %}-->
-
-<!--                {% if decryption_error %}-->
-<!--                <p class="error">-->
-<!--                    Không thể giải mã nội dung. Vui lòng kiểm tra khóa riêng của bạn.-->
-<!--                </p>-->
-<!--                {% endif %}-->
-
-<!--                {% if decrypted_attachments %}-->
-<!--                <p>Tệp đính kèm:</p>-->
-<!--                {% for attachment in decrypted_attachments %}-->
-<!--                <div class="form-file">-->
-<!--                    <a href="{{ url_for('download_decrypted_file', file_path=attachment['path']) }}" download>-->
-<!--                        {% set file_extension = attachment['filename'].split('.')[-1].lower() %}-->
-<!--                        {% if file_extension == 'pdf' %}-->
-<!--                        <i class="bx bxs-file-pdf" style="color: red"></i>-->
-<!--                        {% elif file_extension == 'txt' %}-->
-<!--                        <i class="bx bxs-file-txt"></i>-->
-<!--                        {% elif file_extension == 'doc' or file_extension == 'docx' %}-->
-<!--                        <i class="bx bxs-file-doc" style="color: blue"></i>-->
-<!--                        {% elif file_extension == 'zip' %}-->
-<!--                        <i class="bx bxs-file-archive"></i>-->
-<!--                        {% else %}-->
-<!--                        <i class="bx bxs-file"></i>-->
-<!--                        {% endif %}-->
-<!--                        {{ attachment['filename'] }}-->
-<!--                    </a>-->
-<!--                    <div class="corner-triangle"></div>-->
-<!--                </div>-->
-<!--                {% endfor %}-->
-<!--                {% endif %}-->
-<!--                {% else %}-->
-<!--                <p>Không tìm thấy email.</p>-->
-<!--                {% endif %}-->
-
-<!--                <div class="position-end-decode">-->
-<!--                    <div class="end-decode">-->
-<!--                        <div class="rep-mail">-->
-<!--                            <button type="sumit">Trả lời</button>-->
-<!--                            <button type="submit">Chuyển tiếp</button>-->
-<!--                        </div>-->
-<!--                        <div class="footer-icon">-->
-<!--                            <a href="{{ url_for('inbox') }}">-->
-<!--                                <button type="button" id="closeFormDecode">Quay lại</button>-->
-<!--                            </a>-->
-<!--        &lt;!&ndash;                    <span class="tooltip-text">Quay lại hộp thư</span>&ndash;&gt;-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
+            <!--Đọc mail-->
+            <div id="formDecode" class="form-decode">
+                <h1>Nội dung Email</h1>
+                <p>Người gửi: <span id="senderEmail"></span></p>
+                <p>Tiêu đề: <span id="subjectEmail"></span></p>
+                <div id="bodyContent">
+                    <p>Nội dung:</p>
+                    <div class="content">
+                        <span id="decryptedBody"></span>
+                    </div>
+                </div>
+                <div id="noDecryptedBody">
+                    <p>Không có nội dung giải mã.</p>
+                </div>
+                <div id="attachmentsContent">
+                    <p>Tệp đính kèm:</p>
+                    <div id="attachmentsList"></div>
+                </div>
+                <div id="noAttachmentsContent">
+                    <p style="display: none;">Không có tệp đính kèm.</p>
+                </div>
+                <div class="position-end-decode">
+                    <div class="end-decode">
+                        <div class="rep-mail">
+                            <a class="btn-rep">
+                                <span>Trả lời</span>
+                            </a>
+                            <a class="btn-forward-email">
+                                <span>Chuyển tiếp</span>
+                            </a>
+                        </div>
+                        <div class="footer-icon">
+                            <a>
+                                <button type="button" id="closeFormDecode">Quay lại</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </div>

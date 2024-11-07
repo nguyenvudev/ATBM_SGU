@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from os.path import basename
-
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
@@ -31,6 +30,8 @@ import base64
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///email_encryption.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)
 app.secret_key = os.urandom(24)
 db.init_app(app)
 
@@ -43,7 +44,6 @@ def index():
         return redirect(url_for('inbox'))
     return render_template('index.html')
 
-# Thông báo đăng ký thành công
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -100,10 +100,12 @@ def login():
             session['username'] = user.username
             session['private_key'] = user.private_key
             return redirect(url_for('inbox'))
-        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Trả về thông báo lỗi
 
-    return render_template('login.html')
+        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
 
+    # return render_template('inbox.html')  # Change this to 'index.html'
+
+# Thông báo đăng ký thành công
 # thêm hiện thư đã gửi
 @app.route('/inbox', methods=['GET'])
 def inbox():
@@ -111,19 +113,21 @@ def inbox():
         return redirect(url_for('login'))
 
     search_query = request.args.get('search', '')
-    # Lấy danh sách email nhận
+    local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
+    # Lấy danh sách email nhận và sắp xếp theo thời gian giảm dần
     received_emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
 
-    # Nếu có từ khóa tìm kiếm, lọc email theo người gửi hoặc chủ đề
     if search_query:
         received_emails = received_emails.filter(
             (User.email.ilike(f'%{search_query}%')) |
             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
         ).join(User, User.id == EncryptedEmail.sender_id)
 
-    received_emails = received_emails.all()
+    # Order received emails by timestamp descending
+    received_emails = received_emails.order_by(EncryptedEmail.timestamp.desc()).all()
 
-    # Lấy danh sách email đã gửi
+    # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
     sent_emails = (
         db.session.query(
             EncryptedEmail.subject,
@@ -132,10 +136,11 @@ def inbox():
         )
         .join(User, User.id == EncryptedEmail.receiver_id)
         .filter(EncryptedEmail.sender_id == session['user_id'])
+        .order_by(EncryptedEmail.timestamp.desc())  # Ensure descending order
         .all()
     )
 
-    local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
     for email in received_emails:
         sender = User.query.get(email.sender_id)
         email.sender_email = sender.email if sender else "Người gửi không xác định"
@@ -169,8 +174,6 @@ def inbox():
         })
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
-
-
 
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
@@ -226,8 +229,6 @@ def send_email():
         return "Email đã được gửi."
 
     return render_template('send_email.html')
-
-
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
@@ -289,74 +290,6 @@ def decrypt_email(email_id):
         'decryption_error': decryption_error,
         'decrypted_attachments': decrypted_attachments
     })
-
-
-# @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
-# def decrypt_email(email_id):
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-#
-#     email = EncryptedEmail.query.get_or_404(email_id)
-#     decrypted_body = None
-#     decrypted_attachments = []
-#     decryption_error = None
-#
-#     # Kiểm tra người gửi và người nhận email
-#     is_sent_email = email.sender_id == session['user_id']
-#     if is_sent_email:
-#         # Trường hợp email do người dùng gửi
-#         message = "Đây là email bạn đã gửi. Không cần giải mã."
-#         return render_template(
-#             'inbox.html',
-#             email=email,
-#             message=message,
-#             decrypted_attachments=decrypted_attachments
-#         )
-#
-#     # Tiếp tục giải mã nếu email là email nhận
-#     sender = User.query.get(email.sender_id)
-#     try:
-#         # Lấy khóa riêng tư từ session
-#         private_key = session.get('private_key')
-#         if not private_key:
-#             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
-#
-#         # Giải mã khóa AES
-#         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
-#         if decrypted_aes_key is None:
-#             raise ValueError("Giải mã khóa AES không thành công.")
-#
-#         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-#
-#         # Giải mã nội dung email
-#         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
-#         decrypted_body = decrypted_body_bytes.decode('utf-8')
-#
-#         # Giải mã tệp đính kèm nếu có
-#         attachments = json.loads(email.attachments)  # Lấy danh sách JSON các tệp đính kèm
-#         for attachment in attachments:
-#             encrypted_data = bytes.fromhex(attachment['content'])
-#             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
-#             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
-#
-#             # Write decrypted file to disk
-#             with open(decrypted_attachment_path, 'wb') as decrypted_file:
-#                 decrypted_file.write(decrypted_attachment)
-#
-#             clean_filename = basename(decrypted_attachment_path).replace("decrypted_", "").replace("encrypted_", "")
-#             decrypted_attachments.append({'path': decrypted_attachment_path, 'filename': clean_filename})
-#
-#     except Exception as e:
-#         decryption_error = f"Giải mã thất bại: {str(e)}"
-#
-#     return render_template(
-#         'inbox.html',
-#         email=email,
-#         sender_email=sender.email,
-#         decrypted_body=decrypted_body,
-#         decryption_error=decryption_error,
-#         decrypted_attachments=decrypted_attachments
-#     )
 
 @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
 def download_attachment(email_id):
@@ -422,7 +355,6 @@ def change_password():
 
     return render_template('change_password.html')
 
-
 @app.route('/download_decrypted_file')
 def download_decrypted_file():
     file_path = request.args.get('file_path')
@@ -446,6 +378,11 @@ def logout():
     session.pop('user_id', None)
     session.pop('email', None)
     return redirect(url_for('index'))
+
+@app.before_request
+def refresh_session_lifetime():
+    if 'user_id' in session:
+        session.permanent = True
 
 if __name__ == '__main__':
     app.run(debug=True)

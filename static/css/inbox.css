@@ -626,7 +626,6 @@ th {
     opacity: 1;
     visibility: visible;
     scale: 1;
-    display: block;
 }
 .head-create-mail {
     background: #DBE9F2;
@@ -675,6 +674,9 @@ th {
     height: 50vh;
     font-weight: 400;
     font-size: 16px;
+    overflow: auto;
+    white-space: pre-wrap; /* Đảm bảo xuống dòng và bảo toàn khoảng trắng */
+    word-wrap: break-word; /* Tự động xuống dòng khi đạt đến chiều rộng tối đa */
 }
 .form-control-main:active,
 .form-control-main:focus,
@@ -791,15 +793,17 @@ th {
 .line {
     position: absolute;
     border: 1px solid lightgray;
-    width: 199px;
+    width: 200px;
+    height: 128px;
     bottom: 21px;
+    margin-left: -1px;
 }
 .form-file {
     position: relative;
     border: 1px solid lightgray;
-    margin: 10px 15px;
+    margin: 138px 10px 10px 15px;
     width: 200px;
-    height: 150px;
+    height: 22px;
     display: flex;
     align-items: flex-end;
 }
@@ -825,31 +829,37 @@ th {
     border-top: 20px solid ;
 }
 .position-end-decode {
-    position: absolute;
-    left: 0px;
-    bottom: 5px;
+
 }
 .end-decode {
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
-.rep-mail {
+.rep-mail,
+.footer-icon {
     margin: 10px 15px;
 }
-.rep-mail button,
-.footer-icon button {
-    width: 150px;
+.rep-mail {
+    display: flex;
+    gap: 10px;
+}
+.btn-rep,
+.btn-forward-email,
+.footer-icon button{
+    width: auto;
     font-size: 15px;
     padding: 10px 15px;
-    border-radius: 15px;
+    border-radius: 20px;
     border: 1px solid lightgray;
     background: #fff;
-}
-.rep-mail button:hover,
-.footer-icon button:hover {
     cursor: pointer;
-    background: lightgray;
-    border-color: #BEDBED;
+}
+.btn-rep:hover,
+.btn-forward-email:hover,
+.footer-icon button:hover{
+    background: #BEDBED;
+    border: 1px solid #466EB4;
 }
 /* ___Reponsive___ */
 @media (max-width: 420px) {
