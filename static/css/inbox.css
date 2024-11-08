@@ -272,6 +272,7 @@
 .profile-details:hover {
     border-radius: 100px;
     background-color: #DBE9F2;
+    cursor: pointer;
 }
 .form-account {
     position: absolute;
@@ -288,6 +289,16 @@
     transform-origin: 93% top;
     background: #DBE9F2;
     box-shadow: 0px 16px 20px 0px rgba(0, 0, 0, 0.5);
+}
+/*.profile-details.active ~ .form-account {
+    opacity: 1;
+    visibility: visible;
+    scale: 1;
+}*/
+.form-account.active {
+    opacity: 1;
+    visibility: visible;
+    scale: 1;
 }
 .info {
     display: flex;
@@ -347,11 +358,7 @@
     transform: scale(1.1);
     transition: transform 0.1s ease;
 }
-.profile-details.active ~ .form-account {
-    opacity: 1;
-    visibility: visible;
-    scale: 1;
-}
+
 
 /* ___Recover Key___ */
 .form-recover-key {
@@ -375,7 +382,11 @@
     display: flex;
     justify-content: flex-end;
     margin-right: -25px;
-    margin-top: -10px
+    margin-top: -10px;
+    cursor: pointer;
+}
+.close-recover-key i:hover {
+    color: red;
 }
 .head-recover-key {
     display: flex;
@@ -476,6 +487,9 @@ th {
     transform: scale(1.8);
     transition: transform 0.1s ease;
     color: #466EB4;
+}
+.see a {
+    cursor: pointer;
 }
 .pagination-controls {
     margin-top: 10px;
@@ -906,7 +920,7 @@ th {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
-.form-seen.show {
+.form-seen.active {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
@@ -916,4 +930,12 @@ th {
     .sidebar li .tooltip{
         display: none;
     }
+}
+/* Màu cho các hàng chưa đọc */
+.email-row.unread {
+    background-color: #DBE9F2;
+}
+
+.email-row.read {
+    background-color: #fff; 
 }

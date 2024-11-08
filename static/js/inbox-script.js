@@ -1,4 +1,4 @@
-//__________Ẩn hiện các form__________//
+///__________Ẩn hiện các form__________///
 // ---- Ẩn hiện sidebar ---- //
 let sidebar = document.querySelector(".sidebar");
 let closeBtn = document.querySelector("#btn");
@@ -15,7 +15,6 @@ function menuBtnChange() {
         closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
     }
 }
-
 
 // ---- Ẩn hiện các form ---- //
 document.addEventListener("DOMContentLoaded", function() {
@@ -36,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Nút tắt
     const closeChangePassword = document.getElementById('close-change');
     const closeFormCreateMail = document.getElementById('close-compose');
+    const closeFormSeenMail = document.getElementById('close-form-seen');
 
     // ---- Const các form ---- //
     // Form sidebar
@@ -45,92 +45,56 @@ document.addEventListener("DOMContentLoaded", function() {
     const formMailTrash = document.querySelector('.form-trash-mail');
 
     // Form bên home-section
+    const formProfile = document.querySelector('.form-account');
     const formRecoverKey = document.querySelector('.form-recover-key');
     const formSeenMail = document.querySelector('.form-seen');
-
-
-
-    const closeButton = document.getElementById('closeFormSeen');
-        if (closeButton) {
-            closeButton.addEventListener('click', hideFormSeen);
-        }
-
-    function hideFormSeen() {
-        if (formSeenMail) {
-            formSeenMail.classList.remove('show');
-        }
-    }
-
-    document.addEventListener('click', function(event) {
-
-
-        if (formSeenMail && !formSeenMail.contains(event.target) && !event.target.closest('.btn-show-details')) {
-            hideFormSeen();
-        }
-    });
 
     let isFormRecover = false;
     let isFormVisible = false;
 
-    // Chức năng chuyển đổi giữa các form hộp thư
+    // Mặc định hiển thị form thư đến
+    formMailReceived.classList.add('active');
+
+    // Reset form trước khi chuyển đổi form khác
     function resetForms() {
         formMailReceived.classList.remove('active');
         formMailSend.classList.remove('active');
         formMailTrash.classList.remove('active');
     }
 
-    // Hiển thị hộp thư đến mặc định
-    formMailReceived.classList.add('active');
-
+    // ----- Mở form liên kết với nút bên sidebar ----- //
+    // Mở form thư đến
     mailReceivedBtn.addEventListener('click', function() {
+        hideFormSeen();
         resetForms();
         formMailReceived.classList.add('active');
     });
+
+    // Mở form thư đã gửi
     mailSendBtn.addEventListener('click', function() {
+        hideFormSeen();
         resetForms();
         formMailSend.classList.add('active');
     });
+
+    // Mở form thùng rác
     mailTrashBtn.addEventListener('click', function(){
+        hideFormSeen();
         resetForms();
         formMailTrash.classList.add('active');
     });
 
-    mailSeenBtn.addEventListener('click', function(){
-        formSeenMail.classList.add('show');
-    });
-
-    // Chức năng mở và đóng form Tạo Email
+    // Mở form soạn thư
     mailCreateBtn?.addEventListener('click', function() {
         formMailCreate.classList.toggle('active');
     });
 
-    mailRepBtn?.addEventListener('click', function() {
-        formMailCreate.classList.add('active');
-        document.getElementById('subject').value = '';
-        document.getElementById('main').innerText = '';
-        // Điền thông tin vào form "create-mail"
-        document.getElementById('recipient').value = document.getElementById('senderEmail').innerText;
+    // ----- Mở form bên home-section ----- //
+    // Mở form thông tin tài khoản
+    mailProfileBtn?.addEventListener("click", function() {
+         formProfile.classList.toggle('active');
     });
-
-    mailForwardBtn?.addEventListener('click', function() {
-        formMailCreate.classList.add('active');
-        document.getElementById('recipient').value = '';
-        // Điền thông tin vào form "create-mail"
-        document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectEmail').innerText;
-        document.getElementById('main').innerText =  document.getElementById('decryptedBody').innerText;
-    });
-
-    function closeCreateMail() {
-        formMailCreate.classList.remove('active');
-
-        // Xóa các giá trị đã nhập
-        document.getElementById('recipient').value = '';
-        document.getElementById('subject').value = '';
-        document.getElementById('main').innerText = '';
-    }
-    closeFormCreateMail?.addEventListener('click', closeCreateMail);
-
-    // Chức năng mở và đóng form Khôi Phục Mật Khẩu
+    // Mở và đóng form đổi mật khẩu
     mailChangeBtn?.addEventListener("click", function(e) {
         e.preventDefault();
         if (!isFormRecover) {
@@ -155,41 +119,60 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     closeChangePassword?.addEventListener('click', closeFormRecoverKey);
 
-    // Đóng form khi nhấp ra ngoài
+    // Mở và đóng thư đã gửi
+    mailSeenBtn?.addEventListener('click', function(){
+        formSeenMail.classList.toggle('active');
+    });
+
+    function hideFormSeen() {
+        if (formSeenMail) {
+            formSeenMail.classList.remove('active');
+        }
+    }
+
+    if (closeFormSeenMail) {
+        closeFormSeenMail.addEventListener('click', hideFormSeen);
+    }
+
+    // Mở và đóng trả lời thu
+    mailRepBtn?.addEventListener('click', function() {
+        formMailCreate.classList.add('active');
+        document.getElementById('recipient').value = document.getElementById('senderEmail').innerText;
+        document.getElementById('subject').value = '';
+        document.getElementById('main').innerText = '';
+    });
+
+    mailForwardBtn?.addEventListener('click', function() {
+        formMailCreate.classList.add('active');
+        document.getElementById('recipient').value = '';
+        document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectEmail').innerText;
+        document.getElementById('main').innerText =  document.getElementById('decryptedBody').innerText;
+    });
+
+    function closeCreateMail() {
+        formMailCreate.classList.remove('active');
+        document.getElementById('recipient').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('main').innerText = '';
+    }
+    closeFormCreateMail?.addEventListener('click', closeCreateMail);
+
+    // ----- Đóng form khi click ngoài form ----- //
     document.addEventListener('click', function(event) {
-//        if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
-//            closeCreateMail();
-//        }
+        //if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
+        //    closeCreateMail();
+        //}
         if (!formRecoverKey.contains(event.target) && !event.target.closest('.recover-key')) {
             closeFormRecoverKey();
         }
-    });
-
-    // Chức năng hiển thị thông tin tài khoản
- mailProfileBtn?.addEventListener("click", function() {
-        if (!isFormVisible) {
-         mailProfileBtn.classList.add("active");
-            isFormVisible = true;
-        } else {
-         mailProfileBtn.classList.remove("active");
-            isFormVisible = false;
-        }
+        //if (formSeenMail && !formSeenMail.contains(event.target) && !event.target.closest('.btn-show-details')) {
+        //    hideFormSeen();
+        //}
     });
 });
 
-//_____Thông báo của gửi mail_____//
-document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        const alertBox = document.querySelector(".alert");
-        if (alertBox) {
-            alertBox.style.display = "none";
-        }
-    }, 4000);
-});
-
-
-//_____Delete______//
-// Icon delete thư đến
+///_____________________Ẩn hiện nút Delete_____________________///
+// ---- Nút Delete của form thư đến ---- //
 function toggleDeleteIconReceived() {
    let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
    let deleteIcon = document.getElementById('delete-icon-1');
@@ -208,7 +191,7 @@ document.querySelectorAll('.email-checkbox-received').forEach(checkbox => {
 
 toggleDeleteIconReceived();
 
-// Icon delete thư đã gửi
+// ---- Nút Delete của form thư đã gửi ---- //
 function toggleDeleteIconSend() {
    let checkboxesChecked = document.querySelectorAll('.email-checkbox-send:checked').length > 0;
    let deleteIcon = document.getElementById('delete-icon-2');
@@ -227,7 +210,7 @@ document.querySelectorAll('.email-checkbox-send').forEach(checkbox => {
 
 toggleDeleteIconSend();
 
-// Icon delete thùng rác
+// ---- Nút Delete của form thùng rác ---- //
 function toggleDeleteIconTrash() {
    let checkboxesChecked = document.querySelectorAll('.email-checkbox-trash:checked').length > 0;
    let deleteIcon = document.getElementById('delete-icon-3');
@@ -246,7 +229,17 @@ document.querySelectorAll('.email-checkbox-trash').forEach(checkbox => {
 
 toggleDeleteIconTrash();
 
-// Phân trang table
+///__________Thông báo của việc thực hiện gửi maill__________///
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            alertBox.style.display = "none";
+        }
+    }, 4000);
+});
+
+///__________Phân trang danh sách thư của các form__________///
 document.addEventListener('DOMContentLoaded', function() {
     const rowsPerPage = 13;
 
@@ -299,15 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//______Chức năng soạn thư______ //
-
-//  Cập nhật body
+///__________Các chỉnh sửa cho phần soạn thư__________///
+// ----- Cập nhật nội dung vào div ----- //
 function updateBody() {
-    // Cập nhật giá trị của trường ẩn 'body' từ nội dung của <div id="main">
     document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
 }
 
-// Cập nhật nội dung không bị lỗi div/br
+// ----- Cập nhật nội dung không bị lỗi div/br ----- //
 document.addEventListener("DOMContentLoaded", function() {
     const mainDiv = document.getElementById('main');
 
@@ -331,27 +322,23 @@ document.addEventListener("DOMContentLoaded", function() {
     mainDiv.innerHTML = content.replace(/\n/g, '<br/>');
 });
 
-// Gửi nhiều file
-let selectedFiles = []; // Array to store all selected files
-
+// ----- Gửi nhiều file và chuyển thành dropdown ----- //
+let selectedFiles = [];
 document.getElementById('attachment').addEventListener('change', function() {
     const newFiles = Array.from(this.files);
 
-    // Add each new file only if it doesn't already exist in selectedFiles
     newFiles.forEach(file => {
         if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
             selectedFiles.push(file);
         }
     });
 
-    // Use DataTransfer to update the input's file list with all selected files
     const dataTransfer = new DataTransfer();
     selectedFiles.forEach(file => dataTransfer.items.add(file));
     this.files = dataTransfer.files;
 
-    // Update the dropdown with all selected files
     const fileDropdownContainer = document.getElementById('file-dropdown-container');
-    fileDropdownContainer.innerHTML = ''; // Clear existing dropdown
+    fileDropdownContainer.innerHTML = '';
 
     const select = document.createElement('select');
     select.className = 'file-dropdown';
@@ -366,20 +353,20 @@ document.getElementById('attachment').addEventListener('change', function() {
     fileDropdownContainer.appendChild(select);
 });
 
-
-//______Chức năng đọc thư______//
+///__________Chức năng đọc thư đến__________///
 document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.btn-show-decode').forEach(btn => {
         btn.addEventListener('click', function(event) {
             event.preventDefault();
+
             const url = this.href;
+            const emailRow = this.closest('.email-row');
 
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     console.log("Response data:", data);
 
-                    // Fill the form with data
                     document.getElementById('senderEmail').innerText = data.sender_email;
                     document.getElementById('subjectEmail').innerText = data.subject;
 
@@ -421,7 +408,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         closeButton.addEventListener('click', hideFormDecode);
                     }
 
-                    showFormDecode(); // Show the form
+                    showFormDecode();
 
                     function getIconByFileExtension(filename) {
                         const ext = filename.split('.').pop().toLowerCase();
@@ -434,6 +421,10 @@ document.addEventListener("DOMContentLoaded", function() {
                             default: return '<i class="bx bxs-file"></i>';
                         }
                     }
+
+                    // Chuyển màu hàng email từ "chưa đọc" sang "đã đọc"
+                    emailRow.classList.remove('unread');
+                    emailRow.classList.add('read');
                 })
                 .catch(error => console.error('Error fetching data:', error));
         });
@@ -459,58 +450,38 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-
-
-
-
-
+///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
 document.getElementById('send-email-form').addEventListener('submit', function(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const formData = new FormData(this);
-
-            fetch("{{ url_for('send_email') }}", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.status === 'success') {
-                    updateSentEmails();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-
-        function updateSentEmails() {
-            fetch("{{ url_for('inbox') }}")
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTbody = doc.getElementById('sent-emails-tbody');
-                document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
-            })
-            .catch(error => console.error('Error:', error));
+    const formData = new FormData(this);
+    fetch("{{ url_for('send_email') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            updateSentEmails();
         }
+    })
+    .catch(error => console.error('Error:', error));
+});
 
+function updateSentEmails() {
+    fetch("{{ url_for('inbox') }}")
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newTbody = doc.getElementById('sent-emails-tbody');
+        document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
+    })
+    .catch(error => console.error('Error:', error));
+}
 
-
-
-
-
-
-/// Đọc thư đã gửi ///
-
-
-
-
-
-
-
-
-///////////////////////////////////
+////////////////Chưa chỉnh///////////////////
 function moveToTrash() {
     const selectedEmails = document.querySelectorAll('.email-checkbox-received:checked');
 
