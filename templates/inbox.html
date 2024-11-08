@@ -131,7 +131,7 @@
                             <th>Người gửi</th>
                             <th>Chủ đề</th>
                             <th>Thời gian</th>
-                            <th>Nội dung (Giới hạn)</th>
+                            <th>Nội dung</th>
                             <th>Tệp đính kèm</th>
                             <th class="col-action">Hành động</th>
                         </tr>
@@ -145,7 +145,7 @@
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
                             <td>{{ email.decrypted_body | truncate(50) }}</td>
-                            <!-- Hiển thị tệp đính kèm -->
+<!--                             Hiển thị tệp đính kèm-->
                             <td>
                                 {% if email.attachment %}
                                     <a href="{{ url_for('download_decrypted_file', email_id=email.id) }}" download>{{ email.attachment.filename }}</a>
