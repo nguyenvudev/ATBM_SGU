@@ -138,7 +138,7 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr>
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}">
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
@@ -338,7 +338,7 @@
                     <div class="end-seen">
                         <div class="footer-icon">
                             <a>
-                                <button type="button" id="closeFormSeen">Quay lại</button>
+                                <button type="button" id="close-form-seen">Quay lại</button>
                             </a>
                         </div>
                     </div>
