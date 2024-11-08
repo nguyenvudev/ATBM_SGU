@@ -477,7 +477,7 @@ th {
     transition: transform 0.1s ease;
     color: #466EB4;
 }
-#pagination-controls {
+.pagination-controls {
     margin-top: 10px;
     left: 0px;
     right: 0px;
@@ -485,7 +485,7 @@ th {
     position: fixed;
     bottom: 5px
 }
-#pagination-controls .page-button {
+.pagination-controls .page-button {
     margin: 0 5px;
     padding: 5px 10px;
     border: none;
@@ -494,10 +494,10 @@ th {
     border-radius: 4px;
     outline: none;
 }
-#pagination-controls .page-button:hover {
+.pagination-controls .page-button:hover {
     background-color: #ddd;
 }
-#pagination-controls .page-button:focus {
+.pagination-controls .page-button:focus {
     outline: none;
 }
 
@@ -602,6 +602,39 @@ th {
     visibility: visible;
     scale: 1;
 }
+
+/*___Thông báo của việc gửi mail___*/
+.alert {
+    position: absolute;
+    z-index: 98;
+    right: 0px; /* Ẩn hoàn toàn ngoài màn hình */
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #DBE9F2;
+    border: 3px solid #BEDBED;
+    border-radius: 10px;
+    width: auto;
+    opacity: 0; /* Ẩn hoàn toàn */
+    animation: slide-in 0.5s forwards, fade-out 0.5s 4.5s forwards;
+}
+
+@keyframes slide-in {
+    from {
+        right: 0px;
+        opacity: 0;
+    }
+    to {
+        right: 20px;
+        opacity: 1;
+    }
+}
+
+@keyframes fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
 
 /* ___Form Create maill___ */
 .form-create-mail {
@@ -755,28 +788,30 @@ th {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
-
 .form-decode.show {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
 }
-
-.form-decode h1 {
+.form-decode h1,
+.form-seen h1 {
     text-align: center;
     font-size: 30px;
     font-weight: 600;
     padding-top: 10px;
 }
-.form-decode p {
+.form-decode p,
+.form-seen p {
     font-size: 22px;
     font-weight: bold;
     margin: 10px 15px;
 }
-.form-decode span {
+.form-decode span,
+.form-seen span {
     font-weight: normal;
 }
-.form-decode .error {
+.form-decode .error,
+.form-seen .error {
     font-style: italic;
     color: red; /* Màu đỏ cho thông báo lỗi */
 }
@@ -785,10 +820,6 @@ th {
     padding: 5px 5px;
     height: 200px;
     font-size: 18px;
-}
-.merge-file {
-    display: flex;
-    gap: -5px;
 }
 .line {
     position: absolute;
@@ -860,6 +891,28 @@ th {
 .footer-icon button:hover{
     background: #BEDBED;
     border: 1px solid #466EB4;
+}
+
+/*_____Form Seen Mail_____*/
+.form-seen {
+    position: absolute;
+    background: #fff;
+    margin-left: 10px;
+    width: calc(100% - 20px);
+    height: 90vh;
+    top: 10vh;
+    z-index: 96;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.form-seen.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
 }
 /* ___Reponsive___ */
 @media (max-width: 420px) {

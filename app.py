@@ -4,7 +4,7 @@ from os.path import basename
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
@@ -186,11 +186,15 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
-            return "Bạn không thể gửi email cho chính mình."
+            # return "Bạn không thể gửi email cho chính mình."
+            flash("Bạn không thể gửi email cho chính mình.")
+            return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
-            return "Người nhận không tồn tại."
+            #return "Người nhận không tồn tại."
+            flash("Người nhận không tồn tại.")
+            return redirect(url_for('inbox'))
 
         aes_key = generate_aes_key()
         encrypted_body = aes_encrypt(body.encode('utf-8'), aes_key)
@@ -226,9 +230,11 @@ def send_email():
         )
         db.session.add(email)
         db.session.commit()
-        return "Email đã được gửi."
+        #return "Email đã được gửi."
+        flash("Email đã được gửi.")
+        return redirect(url_for('inbox'))
 
-    return render_template('send_email.html')
+    return render_template('inbox.html')
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
