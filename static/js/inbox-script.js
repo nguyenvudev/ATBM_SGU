@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const closeChangePassword = document.getElementById('close-change');
     const closeFormCreateMail = document.getElementById('close-compose');
     const closeFormSeenMail = document.getElementById('close-form-seen');
+    const closeButton = document.getElementById('closeFormDecode');
 
     // ---- Const các form ---- //
     // Form sidebar
@@ -48,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const formProfile = document.querySelector('.form-account');
     const formRecoverKey = document.querySelector('.form-recover-key');
     const formSeenMail = document.querySelector('.form-seen');
+    const formDecode = document.getElementById('formDecode');
 
     let isFormRecover = false;
     let isFormVisible = false;
@@ -65,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // ----- Mở form liên kết với nút bên sidebar ----- //
     // Mở form thư đến
     mailReceivedBtn.addEventListener('click', function() {
+        hideFormDecode();
         hideFormSeen();
         resetForms();
         formMailReceived.classList.add('active');
@@ -72,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Mở form thư đã gửi
     mailSendBtn.addEventListener('click', function() {
+        hideFormDecode();
         hideFormSeen();
         resetForms();
         formMailSend.classList.add('active');
@@ -79,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Mở form thùng rác
     mailTrashBtn.addEventListener('click', function(){
+        hideFormDecode();
         hideFormSeen();
         resetForms();
         formMailTrash.classList.add('active');
@@ -134,6 +139,19 @@ document.addEventListener("DOMContentLoaded", function() {
         closeFormSeenMail.addEventListener('click', hideFormSeen);
     }
 
+    // Mở và đóng thư đến để đọc
+    function hideFormDecode() {
+        if (formDecode) {
+            formDecode.classList.remove('active');
+        }
+    }
+
+    function showFormDecode() {
+        if (formDecode) {
+            formDecode.classList.add('active');
+        }
+    }
+
     // Mở và đóng trả lời thu
     mailRepBtn?.addEventListener('click', function() {
         formMailCreate.classList.add('active');
@@ -156,6 +174,78 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('main').innerText = '';
     }
     closeFormCreateMail?.addEventListener('click', closeCreateMail);
+
+    // ----- Lấy thông tin cho formDecode ----- //
+    document.querySelectorAll('.btn-show-decode').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const url = this.href;
+            const emailRow = this.closest('.email-row');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('senderEmail').innerText = data.sender_email;
+                    document.getElementById('subjectEmail').innerText = data.subject;
+
+                    if (data.decrypted_body) {
+                        document.getElementById('decryptedBody').innerText = data.decrypted_body;
+                        document.getElementById('bodyContent').style.display = 'block';
+                        document.getElementById('noDecryptedBody').style.display = 'none';
+                    } else {
+                        document.getElementById('bodyContent').style.display = 'none';
+                        document.getElementById('noDecryptedBody').style.display = 'block';
+                    }
+
+                    if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
+                        let attachmentsHTML = '';
+                        data.decrypted_attachments.forEach(attachment => {
+                            attachmentsHTML += `
+                                <div class="merge-file">
+                                    <div class="form-file">
+                                        <div class="line"></div>
+                                        <a href="${attachment.path}" download>
+                                            ${getIconByFileExtension(attachment.filename)}
+                                            ${attachment.filename}
+                                        </a>
+                                        <div class="corner-triangle"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
+                        document.getElementById('attachmentsContent').style.display = 'block';
+                        document.getElementById('noAttachmentsContent').style.display = 'none';
+                    } else {
+                        document.getElementById('attachmentsContent').style.display = 'none';
+                        document.getElementById('noAttachmentsContent').style.display = 'block';
+                    }
+
+                    if (closeButton) {
+                        closeButton.addEventListener('click', hideFormDecode);
+                    }
+
+                    showFormDecode();
+
+                    function getIconByFileExtension(filename) {
+                        const ext = filename.split('.').pop().toLowerCase();
+                        switch (ext) {
+                            case 'pdf': return '<i class="bx bxs-file-pdf" style="color: red"></i>';
+                            case 'xlsx': return '<i class="fa fa-file-excel" style="color: green"></i>';
+                            case 'txt': return '<i class="bx bxs-file-txt"></i>';
+                            case 'doc': case 'docx': return '<i class="bx bxs-file-doc" style="color: blue"></i>';
+                            case 'zip': return '<i class="bx bxs-file-archive"></i>';
+                            default: return '<i class="bx bxs-file"></i>';
+                        }
+                    }
+
+                    emailRow.classList.remove('unread');
+                    emailRow.classList.add('read');
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+    });
 
     // ----- Đóng form khi click ngoài form ----- //
     document.addEventListener('click', function(event) {
@@ -351,103 +441,6 @@ document.getElementById('attachment').addEventListener('change', function() {
     });
 
     fileDropdownContainer.appendChild(select);
-});
-
-///__________Chức năng đọc thư đến__________///
-document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll('.btn-show-decode').forEach(btn => {
-        btn.addEventListener('click', function(event) {
-            event.preventDefault();
-
-            const url = this.href;
-            const emailRow = this.closest('.email-row');
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response data:", data);
-
-                    document.getElementById('senderEmail').innerText = data.sender_email;
-                    document.getElementById('subjectEmail').innerText = data.subject;
-
-                    if (data.decrypted_body) {
-                        document.getElementById('decryptedBody').innerText = data.decrypted_body;
-                        document.getElementById('bodyContent').style.display = 'block';
-                        document.getElementById('noDecryptedBody').style.display = 'none';
-                    } else {
-                        document.getElementById('bodyContent').style.display = 'none';
-                        document.getElementById('noDecryptedBody').style.display = 'block';
-                    }
-
-                    if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
-                        let attachmentsHTML = '';
-                        data.decrypted_attachments.forEach(attachment => {
-                            attachmentsHTML += `
-                                <div class="merge-file">
-                                    <div class="form-file">
-                                        <div class="line"></div>
-                                            <a href="${attachment.path}" download>
-                                                ${getIconByFileExtension(attachment.filename)}
-                                                ${attachment.filename}
-                                            </a>
-                                        <div class="corner-triangle"></div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
-                        document.getElementById('attachmentsContent').style.display = 'block';
-                        document.getElementById('noAttachmentsContent').style.display = 'none';
-                    } else {
-                        document.getElementById('attachmentsContent').style.display = 'none';
-                        document.getElementById('noAttachmentsContent').style.display = 'block';
-                    }
-
-                    const closeButton = document.getElementById('closeFormDecode');
-                    if (closeButton) {
-                        closeButton.addEventListener('click', hideFormDecode);
-                    }
-
-                    showFormDecode();
-
-                    function getIconByFileExtension(filename) {
-                        const ext = filename.split('.').pop().toLowerCase();
-                        switch (ext) {
-                            case 'pdf': return '<i class="bx bxs-file-pdf" style="color: red"></i>';
-                            case 'xlsx': return '<i class="fa fa-file-excel" style="color: green"></i>';
-                            case 'txt': return '<i class="bx bxs-file-txt"></i>';
-                            case 'doc': case 'docx': return '<i class="bx bxs-file-doc" style="color: blue"></i>';
-                            case 'zip': return '<i class="bx bxs-file-archive"></i>';
-                            default: return '<i class="bx bxs-file"></i>';
-                        }
-                    }
-
-                    // Chuyển màu hàng email từ "chưa đọc" sang "đã đọc"
-                    emailRow.classList.remove('unread');
-                    emailRow.classList.add('read');
-                })
-                .catch(error => console.error('Error fetching data:', error));
-        });
-    });
-    function hideFormDecode() {
-        const formDecode = document.getElementById('formDecode');
-        if (formDecode) {
-            formDecode.classList.remove('show');
-        }
-    }
-    function showFormDecode() {
-        const formDecode = document.getElementById('formDecode');
-        if (formDecode) {
-            formDecode.classList.add('show');
-        }
-    }
-    document.addEventListener('click', function(event) {
-        const formDecode = document.getElementById('formDecode');
-
-        if (formDecode && !formDecode.contains(event.target) && !event.target.closest('.btn-show-decode')) {
-            hideFormDecode();
-        }
-    });
 });
 
 ///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
