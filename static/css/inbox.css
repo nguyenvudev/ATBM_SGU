@@ -859,9 +859,6 @@ th {
     border-left: 20px solid transparent;
     border-top: 20px solid ;
 }
-.position-end-decode {
-
-}
 .end-decode {
     display: flex;
     align-items: center;
@@ -875,7 +872,7 @@ th {
     display: flex;
     gap: 10px;
 }
-.btn-rep,
+.btn-rep-email,
 .btn-forward-email,
 .footer-icon button{
     width: auto;
