@@ -1,5 +1,5 @@
-//______Hiển thị______//
-// Đóng mở sidebar
+//__________Ẩn hiện các form__________//
+// ---- Ẩn hiện sidebar ---- //
 let sidebar = document.querySelector(".sidebar");
 let closeBtn = document.querySelector("#btn");
 
@@ -16,26 +16,57 @@ function menuBtnChange() {
     }
 }
 
-// Hiển thị
+
+// ---- Ẩn hiện các form ---- //
 document.addEventListener("DOMContentLoaded", function() {
-    // Lấy các phần tử nút
+    // ---- Const các nút bấm ---- //
+    // Nút sidebar
     const mailCreateBtn = document.querySelector('.mail-create');
     const mailReceivedBtn = document.querySelector('.mail-received');
     const mailSendBtn = document.querySelector('.mail-send');
     const mailTrashBtn = document.querySelector('.mail-trash');
-    const mailRepBtn = document.querySelector('.btn-rep');
-    const mailForwardBtn = document.querySelector('.btn-forward-email');
 
+    // Nút bên home-section
+    const mailProfileBtn = document.querySelector(".profile-details");
+    const mailChangeBtn = document.querySelector(".recover-key");
+
+    // ---- Const các form ---- //
+    // Form sidebar
     const formMailCreate = document.querySelector('.form-create-mail');
     const formMailReceived = document.querySelector('.form-mail-received');
     const formMailSend = document.querySelector('.form-mail-send');
     const formMailTrash = document.querySelector('.form-trash-mail');
 
+
+
+    const mailSeenBtn = document.querySelector('.btn-show-details');
+    const mailRepBtn = document.querySelector('.btn-rep');
+    const mailForwardBtn = document.querySelector('.btn-forward-email');
+    const formSeenMail = document.querySelector('.form-seen');
+
     const formRecoverKey = document.querySelector('.form-recover-key');
     const closeComposeIcon = document.getElementById('close-compose');
     const closeRecoverKey = document.getElementById('close-change');
-    const btnRecover = document.querySelector(".recover-key button");
-    const btnForm = document.querySelector(".profile-details");
+
+
+    const closeButton = document.getElementById('closeFormSeen');
+        if (closeButton) {
+            closeButton.addEventListener('click', hideFormSeen);
+        }
+
+    function hideFormSeen() {
+        if (formSeenMail) {
+            formSeenMail.classList.remove('show');
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+
+
+        if (formSeenMail && !formSeenMail.contains(event.target) && !event.target.closest('.btn-show-details')) {
+            hideFormSeen();
+        }
+    });
 
     let isFormRecover = false;
     let isFormVisible = false;
@@ -61,6 +92,10 @@ document.addEventListener("DOMContentLoaded", function() {
     mailTrashBtn.addEventListener('click', function(){
         resetForms();
         formMailTrash.classList.add('active');
+    });
+
+    mailSeenBtn.addEventListener('click', function(){
+        formSeenMail.classList.add('show');
     });
 
     // Chức năng mở và đóng form Tạo Email
@@ -95,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function() {
     closeComposeIcon?.addEventListener('click', closeCreateMail);
 
     // Chức năng mở và đóng form Khôi Phục Mật Khẩu
-    btnRecover?.addEventListener("click", function(e) {
+    mailChangeBtn?.addEventListener("click", function(e) {
         e.preventDefault();
         if (!isFormRecover) {
             formRecoverKey.style.opacity = 1;
@@ -130,16 +165,27 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Chức năng hiển thị thông tin tài khoản
-    btnForm?.addEventListener("click", function() {
+ mailProfileBtn?.addEventListener("click", function() {
         if (!isFormVisible) {
-            btnForm.classList.add("active");
+         mailProfileBtn.classList.add("active");
             isFormVisible = true;
         } else {
-            btnForm.classList.remove("active");
+         mailProfileBtn.classList.remove("active");
             isFormVisible = false;
         }
     });
 });
+
+//_____Thông báo của gửi mail_____//
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            alertBox.style.display = "none";
+        }
+    }, 4000);
+});
+
 
 //_____Delete______//
 // Icon delete thư đến
@@ -202,47 +248,54 @@ toggleDeleteIconTrash();
 // Phân trang table
 document.addEventListener('DOMContentLoaded', function() {
     const rowsPerPage = 13;
-    const table = document.getElementsByClassName('email-table')[0].getElementsByTagName('tbody')[0];
-    const rows = table.getElementsByTagName('tr');
-    const paginationControls = document.getElementById('pagination-controls');
-    let currentPage = 1;
 
-    function displayRows() {
-        const startRow = (currentPage - 1) * rowsPerPage;
-        const endRow = startRow + rowsPerPage;
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].style.display = i >= startRow && i < endRow ? '' : 'none';
+    function paginateTable(table) {
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const paginationControls = table.nextElementSibling;
+        let currentPage = 1;
+
+        function displayRows() {
+            const startRow = (currentPage - 1) * rowsPerPage;
+            const endRow = startRow + rowsPerPage;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = i >= startRow && i < endRow ? '' : 'none';
+            }
         }
+
+        function setupPagination() {
+            const pageCount = Math.ceil(rows.length / rowsPerPage);
+            paginationControls.innerHTML = '';
+
+            for (let i = 1; i <= pageCount; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-button');
+                pageButton.addEventListener('click', function() {
+                    currentPage = i;
+                    displayRows();
+                    highlightCurrentPage();
+                });
+                paginationControls.appendChild(pageButton);
+            }
+        }
+
+        function highlightCurrentPage() {
+            const buttons = paginationControls.getElementsByClassName('page-button');
+            for (let button of buttons) {
+                button.style.backgroundColor = button.textContent == currentPage ? '#007BFF' : '#f5f5f5';
+                button.style.color = button.textContent == currentPage ? '#FFF' : '#000';
+            }
+        }
+
+        displayRows();
+        setupPagination();
+        highlightCurrentPage();
     }
 
-    function setupPagination() {
-        const pageCount = Math.ceil(rows.length / rowsPerPage);
-        paginationControls.innerHTML = '';
-
-        for (let i = 1; i <= pageCount; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.classList.add('page-button');
-            pageButton.addEventListener('click', function() {
-                currentPage = i;
-                displayRows();
-                highlightCurrentPage();
-            });
-            paginationControls.appendChild(pageButton);
-        }
-    }
-
-    function highlightCurrentPage() {
-        const buttons = paginationControls.getElementsByClassName('page-button');
-        for (let button of buttons) {
-            button.style.backgroundColor = button.textContent == currentPage ? '#007BFF' : '#f5f5f5';
-            button.style.color = button.textContent == currentPage ? '#FFF' : '#000';
-        }
-    }
-
-    displayRows();
-    setupPagination();
-    highlightCurrentPage();
+    // Lặp qua tất cả các bảng email-table để phân trang
+    document.querySelectorAll('.email-table').forEach(table => {
+        paginateTable(table);
+    });
 });
 
 //______Chức năng soạn thư______ //
@@ -396,6 +449,13 @@ document.addEventListener("DOMContentLoaded", function() {
             formDecode.classList.add('show');
         }
     }
+    document.addEventListener('click', function(event) {
+        const formDecode = document.getElementById('formDecode');
+
+        if (formDecode && !formDecode.contains(event.target) && !event.target.closest('.btn-show-decode')) {
+            hideFormDecode();
+        }
+    });
 });
 
 
@@ -403,6 +463,36 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+document.getElementById('send-email-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch("{{ url_for('send_email') }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === 'success') {
+                    updateSentEmails();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function updateSentEmails() {
+            fetch("{{ url_for('inbox') }}")
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTbody = doc.getElementById('sent-emails-tbody');
+                document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
+            })
+            .catch(error => console.error('Error:', error));
+        }
 
 
 
@@ -410,9 +500,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-
-
-
+/// Đọc thư đã gửi ///
 
 
 

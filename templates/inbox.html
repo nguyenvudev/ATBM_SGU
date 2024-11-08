@@ -155,14 +155,14 @@
                             </td>
                             <td class="decode">
                                 <a href="{{ url_for('decrypt_email', email_id=email.id) }}" class="btn-show-decode">
-                                    <i class="bx bx-key"></i>
+                                    <i class="bx bx-envelope-open"></i>
                                 </a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                <div id="pagination-controls"></div>
+                <div class="pagination-controls"></div>
             </div>
 
             <!-- Thư đã gửi -->
@@ -191,11 +191,16 @@
                             <td>{{ email.receiver_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time }}</td>
-                            <td class="see"><a onclick="showDetails()" class="btn-show-details"><i class="bx bx-envelope-open"></i></a></td>
+                            <td class="see">
+                                <a class="btn-show-details">
+                                    <i class="bx bx-envelope-open"></i>
+                                </a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="pagination-controls"></div>
             </div>
 
             <!-- Thùng rác -->
@@ -228,7 +233,17 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="pagination-controls"></div>
             </div>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-info" role="alert">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
             <!-- Soạn thư -->
             <div class="create-mail" id="create-mail">
@@ -256,7 +271,7 @@
                 </form>
             </div>
 
-            <!--Đọc mail-->
+            <!--Đọc mail đến-->
             <div id="formDecode" class="form-decode">
                 <h1>Nội dung Email</h1>
                 <p>Người gửi: <span id="senderEmail"></span></p>
@@ -268,11 +283,11 @@
                     </div>
                 </div>
                 <div id="noDecryptedBody">
-                    <p>Không có nội dung giải mã.</p>
+                    <p style="display: none;">Không có nội dung giải mã.</p>
                 </div>
                 <div id="attachmentsContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsList"></div>
+                    <div id="attachmentsList" style="display: flex;"></div>
                 </div>
                 <div id="noAttachmentsContent">
                     <p style="display: none;">Không có tệp đính kèm.</p>
@@ -281,9 +296,11 @@
                     <div class="end-decode">
                         <div class="rep-mail">
                             <a class="btn-rep">
+                                <i class="bx bx-share"></i>
                                 <span>Trả lời</span>
                             </a>
                             <a class="btn-forward-email">
+                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>
                                 <span>Chuyển tiếp</span>
                             </a>
                         </div>
@@ -295,6 +312,39 @@
                     </div>
                 </div>
             </div>
+
+            <!--Đọc thư đã gửi-->
+            <div id="formSeen" class="form-seen">
+                <h1>Nội dung Email đã gửi</h1>
+                <p>Người nhận: <span id="receiverEmail"></span></p>
+                <p>Tiêu đề: <span id="subjectSeen"></span></p>
+                <div id="bodySeenContent">
+                    <p>Nội dung:</p>
+                    <div class="content">
+                        <span id="decryptedBodySeen"></span>
+                    </div>
+                </div>
+                <div id="noDecryptedBodySeen">
+                    <p style="display: none;">Không có nội dung giải mã.</p>
+                </div>
+                <div id="attachmentsSeenContent">
+                    <p>Tệp đính kèm:</p>
+                    <div id="attachmentsSeenList" style="display: flex;"></div>
+                </div>
+                <div id="noAttachmentsSeenContent">
+                    <p style="display: none;">Không có tệp đính kèm.</p>
+                </div>
+                <div class="position-end-seen">
+                    <div class="end-seen">
+                        <div class="footer-icon">
+                            <a>
+                                <button type="button" id="closeFormSeen">Quay lại</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
