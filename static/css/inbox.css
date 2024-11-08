@@ -802,7 +802,7 @@ th {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
-.form-decode.show {
+.form-decode.active {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
@@ -933,7 +933,7 @@ th {
 }
 /* Màu cho các hàng chưa đọc */
 .email-row.unread {
-    background-color: #DBE9F2;
+    background-color: #DBE9F2; 
 }
 
 .email-row.read {
