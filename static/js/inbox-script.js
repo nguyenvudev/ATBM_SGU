@@ -29,6 +29,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Nút bên home-section
     const mailProfileBtn = document.querySelector(".profile-details");
     const mailChangeBtn = document.querySelector(".recover-key");
+    const mailSeenBtn = document.querySelector('.btn-show-details');
+    const mailRepBtn = document.querySelector('.btn-rep-email');
+    const mailForwardBtn = document.querySelector('.btn-forward-email');
+
+    // Nút tắt
+    const closeChangePassword = document.getElementById('close-change');
+    const closeFormCreateMail = document.getElementById('close-compose');
 
     // ---- Const các form ---- //
     // Form sidebar
@@ -37,16 +44,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const formMailSend = document.querySelector('.form-mail-send');
     const formMailTrash = document.querySelector('.form-trash-mail');
 
-
-
-    const mailSeenBtn = document.querySelector('.btn-show-details');
-    const mailRepBtn = document.querySelector('.btn-rep');
-    const mailForwardBtn = document.querySelector('.btn-forward-email');
+    // Form bên home-section
+    const formRecoverKey = document.querySelector('.form-recover-key');
     const formSeenMail = document.querySelector('.form-seen');
 
-    const formRecoverKey = document.querySelector('.form-recover-key');
-    const closeComposeIcon = document.getElementById('close-compose');
-    const closeRecoverKey = document.getElementById('close-change');
 
 
     const closeButton = document.getElementById('closeFormSeen');
@@ -127,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('subject').value = '';
         document.getElementById('main').innerText = '';
     }
-    closeComposeIcon?.addEventListener('click', closeCreateMail);
+    closeFormCreateMail?.addEventListener('click', closeCreateMail);
 
     // Chức năng mở và đóng form Khôi Phục Mật Khẩu
     mailChangeBtn?.addEventListener("click", function(e) {
@@ -152,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
         formRecoverKey.style.transform = "scale(0)";
         isFormRecover = false;
     }
-    closeRecoverKey?.addEventListener('click', closeFormRecoverKey);
+    closeChangePassword?.addEventListener('click', closeFormRecoverKey);
 
     // Đóng form khi nhấp ra ngoài
     document.addEventListener('click', function(event) {
