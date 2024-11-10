@@ -99,7 +99,6 @@ def login():
             session['email'] = user.email
             session['username'] = user.username
             session['private_key'] = user.private_key
-            session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
         return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
@@ -107,7 +106,7 @@ def login():
     # return render_template('inbox.html')  # Change this to 'index.html'
 
 # Thông báo đăng ký thành công
-# thêm hiện thư đã gửi
+# Thêm hiện thư đã gửi
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
@@ -176,6 +175,7 @@ def inbox():
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
 
+
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
     if 'user_id' not in session:
@@ -195,19 +195,12 @@ def send_email():
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
-        # Generate AES key and encrypt email body
         aes_key = generate_aes_key()
         encrypted_body = aes_encrypt(body.encode('utf-8'), aes_key)
-
-        # Encrypt the AES key with the receiver's public key
         encrypted_aes_key = rsa_encrypt(aes_key.hex(), receiver.public_key)
         signature = create_signature(body, session['private_key'])
 
-        # Save a separate encrypted version for the sender to view later
-        sender_public_key = session['public_key']
-        encrypted_body_for_sender = rsa_encrypt(body, sender_public_key)
-
-        # Encrypt and save multiple attachments
+        # Encrypt multiple attachments
         attachments = request.files.getlist('attachment')
         encrypted_attachments = []
         for attachment in attachments:
@@ -218,11 +211,13 @@ def send_email():
                     "filename": encrypted_filename,
                     "content": encrypted_data.hex()
                 })
+
+                # Save the encrypted file
                 os.makedirs('attachments', exist_ok=True)
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in the database
+        # Store email and attachments in database
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
@@ -230,8 +225,7 @@ def send_email():
             body=encrypted_body.hex(),
             aes_key=encrypted_aes_key,
             signature=signature,
-            body_for_sender=encrypted_body_for_sender,  # Encrypted body for sender
-            attachments=json.dumps(encrypted_attachments)
+            attachments=json.dumps(encrypted_attachments)  # Store attachment metadata as JSON
         )
         db.session.add(email)
         db.session.commit()
@@ -247,50 +241,52 @@ def decrypt_email(email_id):
         return redirect(url_for('login'))
 
     email = EncryptedEmail.query.get_or_404(email_id)
+
+    if not email.is_read:
+        email.is_read = True
+        db.session.commit()
+
     decrypted_body = None
     decrypted_attachments = []
     decryption_error = None
 
     is_sent_email = email.sender_id == session['user_id']
     if is_sent_email:
-        # Người gửi có thể giải mã bản sao nội dung đã lưu
-        try:
-            private_key = session.get('private_key')
-            if not private_key:
-                raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
-
-            # Giải mã bản sao cho người gửi
-            decrypted_body = rsa_decrypt(email.body_for_sender, private_key)
-
-        except Exception as e:
-            decryption_error = f"Giải mã thất bại: {str(e)}"
-
         return jsonify({
-            'message': "Đây là email bạn đã gửi.",
+            'message': "Đây là email bạn đã gửi. Không cần giải mã.",
             'subject': email.subject,
-            'receiver_email': session['email'],
-            'decrypted_body': decrypted_body,
-            'decryption_error': decryption_error,
-            'decrypted_attachments': []  # Không cần giải mã tệp đính kèm
+            'sender_email': None,
+            'decrypted_body': None,
+            'decrypted_attachments': []
         })
 
-    # Logic giải mã cho người nhận
     sender = User.query.get(email.sender_id)
     try:
         private_key = session.get('private_key')
         if not private_key:
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
+        # Giải mã khóa AES
         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
-        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-        decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
-        decrypted_body = decrypted_body_bytes.decode('utf-8')
+        if decrypted_aes_key is None:
+            raise ValueError("Giải mã khóa AES không thành công.")
 
+        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+
+        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
+        decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
+        decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
+
+        # Loại bỏ khoảng trắng dư thừa ở đầu dòng đầu tiên
+#        decrypted_body = '\n'.join([line.lstrip() for line in decrypted_body.split('\n')])
+
+        # Giải mã các tệp đính kèm
         attachments = json.loads(email.attachments)
         for attachment in attachments:
             encrypted_data = bytes.fromhex(attachment['content'])
             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
+
             with open(decrypted_attachment_path, 'wb') as decrypted_file:
                 decrypted_file.write(decrypted_attachment)
 

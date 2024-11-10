@@ -832,7 +832,8 @@ th {
 .content {
     margin: 0px 15px;
     padding: 5px 5px;
-    height: 200px;
+    max-height: 250px;
+    overflow: auto;
     font-size: 18px;
 }
 .line {
@@ -842,6 +843,17 @@ th {
     height: 128px;
     bottom: 21px;
     margin-left: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-file {
+    font-size: 60px;
+    opacity: 0.3;
+}
+.icon-small i {
+    opacity: 1;
+    font-size: 15px;
 }
 .form-file {
     position: relative;
@@ -933,7 +945,7 @@ th {
 }
 /* Màu cho các hàng chưa đọc */
 .email-row.unread {
-    background-color: #DBE9F2; 
+    background-color: lightgray;
 }
 
 .email-row.read {

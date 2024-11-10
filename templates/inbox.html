@@ -138,14 +138,14 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}">
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" >
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
                             <td>{{ email.decrypted_body | truncate(50) }}</td>
-<!--                             Hiển thị tệp đính kèm-->
+                            <!--Hiển thị tệp đính kèm-->
                             <td>
                                 {% if email.attachment %}
                                     <a href="{{ url_for('download_decrypted_file', email_id=email.id) }}" download>{{ email.attachment.filename }}</a>
@@ -287,7 +287,7 @@
                 </div>
                 <div id="attachmentsContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsList" style="display: flex;"></div>
+                    <div id="attachmentsList" style="display: flex; overflow: auto;"></div>
                 </div>
                 <div id="noAttachmentsContent">
                     <p style="display: none;">Không có tệp đính kèm.</p>
@@ -344,7 +344,6 @@
                     </div>
                 </div>
             </div>
-
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
