@@ -190,7 +190,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById('subjectEmail').innerText = data.subject;
 
                     if (data.decrypted_body) {
-                        document.getElementById('decryptedBody').innerText = data.decrypted_body;
+                        // Sử dụng innerText để tránh việc hiển thị các thẻ HTML
+                        let decryptedBody = data.decrypted_body; // Chuyển đổi các ký tự xuống dòng thành thẻ <br>
+                        decryptedBody = decryptedBody.replace(/\n/g, '<br>');
+                        document.getElementById('decryptedBody').innerHTML = decryptedBody;
+
                         document.getElementById('bodyContent').style.display = 'block';
                         document.getElementById('noDecryptedBody').style.display = 'none';
                     } else {
@@ -198,22 +202,27 @@ document.addEventListener("DOMContentLoaded", function() {
                         document.getElementById('noDecryptedBody').style.display = 'block';
                     }
 
+
                     if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
                         let attachmentsHTML = '';
                         data.decrypted_attachments.forEach(attachment => {
+                            const fileIcon = getIconByFileExtension(attachment.filename);
                             attachmentsHTML += `
                                 <div class="merge-file">
                                     <div class="form-file">
-                                        <div class="line"></div>
+                                        <div class="line">
+                                            ${fileIcon.icon} <!-- Icon lớn cho loại tệp -->
+                                        </div>
                                         <a href="${attachment.path}" download>
-                                            ${getIconByFileExtension(attachment.filename)}
+                                            <span class="icon-small">${fileIcon.icon}</span> <!-- Icon nhỏ cạnh tên tệp -->
                                             ${attachment.filename}
                                         </a>
-                                        <div class="corner-triangle"></div>
+                                        <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
                                     </div>
                                 </div>
                             `;
                         });
+
                         document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
                         document.getElementById('attachmentsContent').style.display = 'block';
                         document.getElementById('noAttachmentsContent').style.display = 'none';
@@ -231,14 +240,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     function getIconByFileExtension(filename) {
                         const ext = filename.split('.').pop().toLowerCase();
                         switch (ext) {
-                            case 'pdf': return '<i class="bx bxs-file-pdf" style="color: red"></i>';
-                            case 'xlsx': return '<i class="fa fa-file-excel" style="color: green"></i>';
-                            case 'txt': return '<i class="bx bxs-file-txt"></i>';
-                            case 'doc': case 'docx': return '<i class="bx bxs-file-doc" style="color: blue"></i>';
-                            case 'zip': return '<i class="bx bxs-file-archive"></i>';
-                            default: return '<i class="bx bxs-file"></i>';
+                            case 'pdf':
+                                return { icon: '<i class="bx bxs-file-pdf icon-file" style="color: red"></i>', color: 'red' };
+                            case 'xlsx':
+                                return { icon: '<i class="fa fa-file-excel icon-file" style="color: green"></i>', color: 'green' };
+                            case 'txt':
+                                return { icon: '<i class="bx bxs-file-txt icon-file"></i>', color: 'gray' };
+                            case 'doc': case 'docx':
+                                return { icon: '<i class="bx bxs-file-doc icon-file" style="color: blue"></i>', color: 'blue' };
+                            case 'zip':
+                                return { icon: '<i class="bx bxs-file-archive icon-file"></i>', color: 'orange' };
+                            default:
+                                return { icon: '<i class="bx bxs-file icon-file"></i>', color: 'black' };
                         }
                     }
+
 
                     emailRow.classList.remove('unread');
                     emailRow.classList.add('read');

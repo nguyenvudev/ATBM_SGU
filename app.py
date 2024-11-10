@@ -106,7 +106,7 @@ def login():
     # return render_template('inbox.html')  # Change this to 'index.html'
 
 # Thông báo đăng ký thành công
-# thêm hiện thư đã gửi
+# Thêm hiện thư đã gửi
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
@@ -175,6 +175,7 @@ def inbox():
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
 
+
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
     if 'user_id' not in session:
@@ -186,13 +187,11 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
-            # return "Bạn không thể gửi email cho chính mình."
             flash("Bạn không thể gửi email cho chính mình.")
             return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
-            #return "Người nhận không tồn tại."
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
@@ -230,11 +229,11 @@ def send_email():
         )
         db.session.add(email)
         db.session.commit()
-        #return "Email đã được gửi."
         flash("Email đã được gửi.")
         return redirect(url_for('inbox'))
 
     return render_template('inbox.html')
+
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
@@ -242,6 +241,11 @@ def decrypt_email(email_id):
         return redirect(url_for('login'))
 
     email = EncryptedEmail.query.get_or_404(email_id)
+
+    if not email.is_read:
+        email.is_read = True
+        db.session.commit()
+
     decrypted_body = None
     decrypted_attachments = []
     decryption_error = None
@@ -262,15 +266,21 @@ def decrypt_email(email_id):
         if not private_key:
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
+        # Giải mã khóa AES
         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
 
+        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
-        decrypted_body = decrypted_body_bytes.decode('utf-8')
+        decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 
+        # Loại bỏ khoảng trắng dư thừa ở đầu dòng đầu tiên
+#        decrypted_body = '\n'.join([line.lstrip() for line in decrypted_body.split('\n')])
+
+        # Giải mã các tệp đính kèm
         attachments = json.loads(email.attachments)
         for attachment in attachments:
             encrypted_data = bytes.fromhex(attachment['content'])
@@ -296,6 +306,7 @@ def decrypt_email(email_id):
         'decryption_error': decryption_error,
         'decrypted_attachments': decrypted_attachments
     })
+
 
 @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
 def download_attachment(email_id):
