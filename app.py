@@ -4,7 +4,8 @@ from os.path import basename
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
-from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, \
+    jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
@@ -38,11 +39,13 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+
 @app.route('/')
 def index():
     if 'user_id' in session:
         return redirect(url_for('inbox'))
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -66,7 +69,8 @@ def register():
         private_key, public_key = generate_keys()
         pem_private, pem_public = serialize_keys(private_key, public_key)
 
-        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=pem_private)
+        user = User(email=email, username=username, password=hashed_password, public_key=pem_public,
+                    private_key=pem_private)
         db.session.add(user)
         db.session.commit()
 
@@ -81,11 +85,13 @@ def register():
 
         # Gửi phản hồi JSON để client hiển thị modal thành công
         response = jsonify(success=True, message="Đăng ký thành công!")
-        response.headers['X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
+        response.headers[
+            'X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
 
         return response
 
     return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,15 +105,15 @@ def login():
             session['email'] = user.email
             session['username'] = user.username
             session['private_key'] = user.private_key
-            session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
         return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
 
     # return render_template('inbox.html')  # Change this to 'index.html'
 
+
 # Thông báo đăng ký thành công
-# thêm hiện thư đã gửi
+# Thêm hiện thư đã gửi
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
@@ -140,7 +146,6 @@ def inbox():
         .order_by(EncryptedEmail.timestamp.desc())  # Ensure descending order
         .all()
     )
-
 
     for email in received_emails:
         sender = User.query.get(email.sender_id)
@@ -176,6 +181,7 @@ def inbox():
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
 
+
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
     if 'user_id' not in session:
@@ -187,27 +193,22 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
+            # return "Bạn không thể gửi email cho chính mình."
             flash("Bạn không thể gửi email cho chính mình.")
             return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
+            # return "Người nhận không tồn tại."
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
-        # Generate AES key and encrypt email body
         aes_key = generate_aes_key()
         encrypted_body = aes_encrypt(body.encode('utf-8'), aes_key)
-
-        # Encrypt the AES key with the receiver's public key
         encrypted_aes_key = rsa_encrypt(aes_key.hex(), receiver.public_key)
         signature = create_signature(body, session['private_key'])
 
-        # Save a separate encrypted version for the sender to view later
-        sender_public_key = session['public_key']
-        encrypted_body_for_sender = rsa_encrypt(body, sender_public_key)
-
-        # Encrypt and save multiple attachments
+        # Encrypt multiple attachments
         attachments = request.files.getlist('attachment')
         encrypted_attachments = []
         for attachment in attachments:
@@ -218,11 +219,13 @@ def send_email():
                     "filename": encrypted_filename,
                     "content": encrypted_data.hex()
                 })
+
+                # Save the encrypted file
                 os.makedirs('attachments', exist_ok=True)
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in the database
+        # Store email and attachments in database
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
@@ -230,11 +233,11 @@ def send_email():
             body=encrypted_body.hex(),
             aes_key=encrypted_aes_key,
             signature=signature,
-            body_for_sender=encrypted_body_for_sender,  # Encrypted body for sender
-            attachments=json.dumps(encrypted_attachments)
+            attachments=json.dumps(encrypted_attachments)  # Store attachment metadata as JSON
         )
         db.session.add(email)
         db.session.commit()
+        # return "Email đã được gửi."
         flash("Email đã được gửi.")
         return redirect(url_for('inbox'))
 
@@ -247,34 +250,25 @@ def decrypt_email(email_id):
         return redirect(url_for('login'))
 
     email = EncryptedEmail.query.get_or_404(email_id)
+
+    if not email.is_read:
+        email.is_read = True
+        db.session.commit()
+
     decrypted_body = None
     decrypted_attachments = []
     decryption_error = None
 
     is_sent_email = email.sender_id == session['user_id']
     if is_sent_email:
-        # Người gửi có thể giải mã bản sao nội dung đã lưu
-        try:
-            private_key = session.get('private_key')
-            if not private_key:
-                raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
-
-            # Giải mã bản sao cho người gửi
-            decrypted_body = rsa_decrypt(email.body_for_sender, private_key)
-
-        except Exception as e:
-            decryption_error = f"Giải mã thất bại: {str(e)}"
-
         return jsonify({
-            'message': "Đây là email bạn đã gửi.",
+            'message': "Đây là email bạn đã gửi. Không cần giải mã.",
             'subject': email.subject,
-            'receiver_email': session['email'],
-            'decrypted_body': decrypted_body,
-            'decryption_error': decryption_error,
-            'decrypted_attachments': []  # Không cần giải mã tệp đính kèm
+            'sender_email': None,
+            'decrypted_body': None,
+            'decrypted_attachments': []
         })
 
-    # Logic giải mã cho người nhận
     sender = User.query.get(email.sender_id)
     try:
         private_key = session.get('private_key')
@@ -282,7 +276,11 @@ def decrypt_email(email_id):
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+        if decrypted_aes_key is None:
+            raise ValueError("Giải mã khóa AES không thành công.")
+
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8')
 
@@ -291,6 +289,7 @@ def decrypt_email(email_id):
             encrypted_data = bytes.fromhex(attachment['content'])
             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
+
             with open(decrypted_attachment_path, 'wb') as decrypted_file:
                 decrypted_file.write(decrypted_attachment)
 
@@ -312,46 +311,47 @@ def decrypt_email(email_id):
     })
 
 
-@app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
-def download_attachment(email_id):
-    email = EncryptedEmail.query.get_or_404(email_id)
-
-    if request.method == 'POST':
-        private_key = request.form.get('private_key')
-        if email.attachment and private_key:
-            attachment_path = os.path.join('attachments', email.attachment)
-
-            # Đọc tệp đã mã hóa
-            with open(attachment_path, 'rb') as file:
-                encrypted_data = file.read()
-
-            try:
-                # Giải mã khóa AES
-                decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
-                decrypted_aes_key_bytes = base64.b64decode(decrypted_aes_key)
-
-                # Giải mã dữ liệu
-                decrypted_body = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
-
-                # Đường dẫn lưu tệp giải mã
-                decrypted_file_path = os.path.join('downloads', 'decrypted_' + email.attachment)
-
-                # Xóa tệp cũ nếu đã tồn tại
-                if os.path.exists(decrypted_file_path):
-                    os.remove(decrypted_file_path)
-
-                # Lưu file đã giải mã
-                with open(decrypted_file_path, 'wb') as decrypted_file:
-                    decrypted_file.write(decrypted_body)
-
-                return send_file(decrypted_file_path, as_attachment=True)  # Tải file đã giải mã về
-
-            except Exception as e:
-                return f"Không thể giải mã file đính kèm: {str(e)}"
-        else:
-            return "Cần có khóa riêng để giải mã tệp đính kèm."
-
-    return render_template('download_attachment.html', email=email)
+# @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
+# def download_attachment(email_id):
+#     email = EncryptedEmail.query.get_or_404(email_id)
+#
+#     if request.method == 'POST':
+#         private_key = request.form.get('private_key')
+#         if email.attachment and private_key:
+#             attachment_path = os.path.join('attachments', email.attachment)
+#
+#             # Đọc tệp đã mã hóa
+#             with open(attachment_path, 'rb') as file:
+#                 encrypted_data = file.read()
+#
+#             try:
+#                 # Giải mã khóa AES
+#                 decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+#                 decrypted_aes_key_bytes = base64.b64decode(decrypted_aes_key)
+#
+#                 # Giải mã dữ liệu
+#                 decrypted_body = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
+#
+#                 # Đường dẫn lưu tệp giải mã
+#                 decrypted_file_path = os.path.join('downloads', 'decrypted_' + email.attachment)
+#
+#                 # Xóa tệp cũ nếu đã tồn tại
+#                 if os.path.exists(decrypted_file_path):
+#                     os.remove(decrypted_file_path)
+#
+#                 # Lưu file đã giải mã
+#                 with open(decrypted_file_path, 'wb') as decrypted_file:
+#                     decrypted_file.write(decrypted_body)
+#
+#                 return send_file(decrypted_file_path, as_attachment=True)  # Tải file đã giải mã về
+#
+#             except Exception as e:
+#                 return f"Không thể giải mã file đính kèm: {str(e)}"
+#         else:
+#             return "Cần có khóa riêng để giải mã tệp đính kèm."
+#
+#     return render_template('download_attachment.html', email=email)
+#
 
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
@@ -376,6 +376,7 @@ def change_password():
 
     return render_template('change_password.html')
 
+
 @app.route('/download_decrypted_file')
 def download_decrypted_file():
     file_path = request.args.get('file_path')
@@ -389,10 +390,12 @@ def download_decrypted_file():
 
     return "Không tìm thấy tệp đã giải mã."
 
+
 @app.errorhandler(IntegrityError)
 def handle_integrity_error(error):
     db.session.rollback()
     return "Đã xảy ra lỗi: " + str(error.orig), 400
+
 
 @app.route('/logout')
 def logout():
@@ -400,10 +403,12 @@ def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
 
+
 @app.before_request
 def refresh_session_lifetime():
     if 'user_id' in session:
         session.permanent = True
+
 
 if __name__ == '__main__':
     app.run(debug=True)

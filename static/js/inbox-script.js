@@ -199,43 +199,23 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
 
                     if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
-    let attachmentsHTML = '';
-    data.decrypted_attachments.forEach(attachment => {
-        // Kiểm tra nếu là tệp PDF hoặc hình ảnh
-        const ext = attachment.filename.split('.').pop().toLowerCase();
-        let previewHTML = '';
-
-        if (ext === 'pdf') {
-            previewHTML = `
-                <div class="file-preview" id="preview-${attachment.filename}">
-                    <iframe src="${attachment.path}" width="100%" height="300px"></iframe>
-                </div>`;
-        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-            previewHTML = `
-                <div class="file-preview" id="preview-${attachment.filename}">
-                    <img src="${attachment.path}" alt="Image preview" width="100%" />
-                </div>`;
-        } else {
-            previewHTML = `
-                <div class="file-preview">
-                    <p>Không thể hiển thị xem trước cho tệp này.</p>
-                </div>`;
-        }
-
-        attachmentsHTML += `
-            <div class="merge-file">
-                <div class="form-file">
-                    <div class="line"></div>
-                    <a href="${attachment.path}" download>
-                        ${getIconByFileExtension(attachment.filename)}
-                        ${attachment.filename}
-                    </a>
-                    ${previewHTML}
-                    <div class="corner-triangle"></div>
-                </div>
-            </div>
-        `;
-    });
+                        let attachmentsHTML = '';
+                        data.decrypted_attachments.forEach(attachment => {
+                            const fileIcon = getIconByFileExtension(attachment.filename);
+                            attachmentsHTML += `
+                                <div class="merge-file">
+                                    <div class="form-file">
+                                        <div class="line">
+                                            ${fileIcon.icon}
+                                        </div>
+                                        <a href="${attachment.path}" download>
+                                            ${attachment.filename}
+                                        </a>
+                                        <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
                         document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
                         document.getElementById('attachmentsContent').style.display = 'block';
                         document.getElementById('noAttachmentsContent').style.display = 'none';
@@ -250,17 +230,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     showFormDecode();
 
-                   function getIconByFileExtension(filename) {
-                    const ext = filename.split('.').pop().toLowerCase();
-                    switch (ext) {
-                        case 'pdf': return '<i class="bx bxs-file-pdf" style="color: red"></i>';
-                        case 'xlsx': return '<i class="fa fa-file-excel" style="color: green"></i>';
-                        case 'txt': return '<i class="bx bxs-file-txt"></i>';
-                        case 'doc': case 'docx': return '<i class="bx bxs-file-doc" style="color: blue"></i>';
-                        case 'zip': return '<i class="bx bxs-file-archive"></i>';
-                        default: return '<i class="bx bxs-file"></i>';
+                    function getIconByFileExtension(filename) {
+                        const ext = filename.split('.').pop().toLowerCase();
+                        switch (ext) {
+                            case 'pdf':
+                                return { icon: '<i class="bx bxs-file-pdf icon-file" style="color: red"></i>', color: 'red' };
+                            case 'xlsx':
+                                return { icon: '<i class="fa fa-file-excel icon-file" style="color: green"></i>', color: 'green' };
+                            case 'txt':
+                                return { icon: '<i class="bx bxs-file-txt icon-file"></i>', color: 'gray' };
+                            case 'doc': case 'docx':
+                                return { icon: '<i class="bx bxs-file-doc icon-file" style="color: blue"></i>', color: 'blue' };
+                            case 'zip':
+                                return { icon: '<i class="bx bxs-file-archive icon-file"></i>', color: 'orange' };
+                            default:
+                                return { icon: '<i class="bx bxs-file icon-file"></i>', color: 'black' };
+                        }
                     }
-                }
+
 
                     emailRow.classList.remove('unread');
                     emailRow.classList.add('read');
@@ -563,25 +550,4 @@ function deleteSelectedTrash() {
             console.error('Lỗi:', error);
         });
     }
-}
-
-
-
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-function renderPDF(url, canvasId) {
-    pdfjsLib.getDocument(url).promise.then(pdf => {
-        pdf.getPage(1).then(page => {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const viewport = page.getViewport({ scale: 1 });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            page.render({
-                canvasContext: ctx,
-                viewport: viewport
-            });
-        });
-    });
 }
