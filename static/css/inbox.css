@@ -272,6 +272,7 @@
 .profile-details:hover {
     border-radius: 100px;
     background-color: #DBE9F2;
+    cursor: pointer;
 }
 .form-account {
     position: absolute;
@@ -288,6 +289,16 @@
     transform-origin: 93% top;
     background: #DBE9F2;
     box-shadow: 0px 16px 20px 0px rgba(0, 0, 0, 0.5);
+}
+/*.profile-details.active ~ .form-account {
+    opacity: 1;
+    visibility: visible;
+    scale: 1;
+}*/
+.form-account.active {
+    opacity: 1;
+    visibility: visible;
+    scale: 1;
 }
 .info {
     display: flex;
@@ -322,7 +333,7 @@
     border-bottom: 1px solid;
 }
 .main-info .full-email {
-    font-size: 16px;
+    font-size: 20px;
     border-bottom: 1px solid;
 }
 .recover-key {
@@ -347,11 +358,7 @@
     transform: scale(1.1);
     transition: transform 0.1s ease;
 }
-.profile-details.active ~ .form-account {
-    opacity: 1;
-    visibility: visible;
-    scale: 1;
-}
+
 
 /* ___Recover Key___ */
 .form-recover-key {
@@ -371,6 +378,16 @@
 .info-recover-key img {
     width: 50px;
 }
+.close-recover-key {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: -25px;
+    margin-top: -10px;
+    cursor: pointer;
+}
+.close-recover-key i:hover {
+    color: red;
+}
 .head-recover-key {
     display: flex;
     justify-content: center;
@@ -382,17 +399,13 @@
     font-size: 24px;
 }
 .info-recover-key {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 10px;
     padding: 15px 30px 15px 30px;
     font-size: 24px;
 }
 .info-recover-key div input {
     width: 250px;
     height: 40px;
+    margin-bottom: 10px;
     border: none;
     border-bottom: 2px solid #BEDBED;
     background: #DBE9F2;
@@ -403,15 +416,22 @@
     outline: none;
     border-color: #466EB4;
 }
-.info-recover-key button {
+.button-submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.button-submit button {
     padding: 10px 30px;
     margin-top: 10px;
     background: #DBE9F2;
     border-radius: 20px;
     border: 1px solid #8b8b8b;
 }
-.info-recover-key button:hover {
+.button-submit button:hover {
     cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
     background: #BEDBED;
     transform: scale(1.1);
     transition: transform 0.1s ease;
@@ -468,12 +488,39 @@ th {
     transition: transform 0.1s ease;
     color: #466EB4;
 }
+.see a {
+    cursor: pointer;
+}
+.pagination-controls {
+    margin-top: 10px;
+    left: 0px;
+    right: 0px;
+    text-align: center;
+    position: fixed;
+    bottom: 5px
+}
+.pagination-controls .page-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    border-radius: 4px;
+    outline: none;
+}
+.pagination-controls .page-button:hover {
+    background-color: #ddd;
+}
+.pagination-controls .page-button:focus {
+    outline: none;
+}
 
 /* ___Form Mail Received___ */
 .form-mail-received {
     position: absolute;
     background: #fff;
-    width: 100%;
+    margin-left: 10px;
+    width: calc(100% - 20px);
     height: 90vh;
     top: 10vh;
     z-index: 90;
@@ -532,7 +579,8 @@ th {
 .form-mail-send {
     position: absolute;
     background: #fff;
-    width: 100%;
+    margin-left: 10px;
+    width: calc(100% - 20px);
     height: 90vh;
     top: 10vh;
     z-index: 91;
@@ -552,7 +600,8 @@ th {
 .form-trash-mail {
     position: absolute;
     background: #fff;
-    width: 100%;
+    margin-left: 10px;
+    width: calc(100% - 20px);
     height: 90vh;
     top: 10vh;
     z-index: 92;
@@ -567,6 +616,39 @@ th {
     visibility: visible;
     scale: 1;
 }
+
+/*___Thông báo của việc gửi mail___*/
+.alert {
+    position: absolute;
+    z-index: 98;
+    right: 0px; /* Ẩn hoàn toàn ngoài màn hình */
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #DBE9F2;
+    border: 3px solid #BEDBED;
+    border-radius: 10px;
+    width: auto;
+    opacity: 0; /* Ẩn hoàn toàn */
+    animation: slide-in 0.5s forwards, fade-out 0.5s 4.5s forwards;
+}
+
+@keyframes slide-in {
+    from {
+        right: 0px;
+        opacity: 0;
+    }
+    to {
+        right: 20px;
+        opacity: 1;
+    }
+}
+
+@keyframes fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
 
 /* ___Form Create maill___ */
 .form-create-mail {
@@ -591,7 +673,6 @@ th {
     opacity: 1;
     visibility: visible;
     scale: 1;
-    display: block;
 }
 .head-create-mail {
     background: #DBE9F2;
@@ -640,6 +721,9 @@ th {
     height: 50vh;
     font-weight: 400;
     font-size: 16px;
+    overflow: auto;
+    white-space: pre-wrap; /* Đảm bảo xuống dòng và bảo toàn khoảng trắng */
+    word-wrap: break-word; /* Tự động xuống dòng khi đạt đến chiều rộng tối đa */
 }
 .form-control-main:active,
 .form-control-main:focus,
@@ -650,9 +734,9 @@ th {
     height: 60px;
     width: calc(100% - 30px);
     margin-left: 15px;
-    margin-top: 10px;
+    margin-top: 20px;
     display: flex;
-    align-items:flex-end;
+    align-items: center;
     justify-content: flex-start;
     gap: 10px;
 }
@@ -670,9 +754,200 @@ th {
     font-size: 20px;
     color: #fff;
 }
+.footer-create-mail i {
+    font-size: 24px;
+    cursor: pointer;
+}
+.footer-create-mail i:hover {
+    transform: scale(1.1);
+}
+.file-dropdown {
+    width: 300px;
+    height: 30px;
+    padding-left: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    appearance: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+.file-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+    border-color: #007BFF transparent transparent transparent;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+/* ___Form Decode___ */
+.form-decode {
+    position: absolute;
+    background: #fff;
+    margin-left: 10px;
+    width: calc(100% - 20px);
+    height: 90vh;
+    top: 10vh;
+    z-index: 96;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.form-decode.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+.form-decode h1,
+.form-seen h1 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 600;
+    padding-top: 10px;
+}
+.form-decode p,
+.form-seen p {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 15px;
+}
+.form-decode span,
+.form-seen span {
+    font-weight: normal;
+}
+.form-decode .error,
+.form-seen .error {
+    font-style: italic;
+    color: red; /* Màu đỏ cho thông báo lỗi */
+}
+.content {
+    margin: 0px 15px;
+    padding: 5px 5px;
+    max-height: 250px;
+    overflow: auto;
+    font-size: 18px;
+}
+.line {
+    position: absolute;
+    border: 1px solid lightgray;
+    width: 200px;
+    height: 128px;
+    bottom: 21px;
+    margin-left: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-file {
+    font-size: 60px;
+    opacity: 0.3;
+}
+.icon-small i {
+    opacity: 1;
+    font-size: 15px;
+}
+.form-file {
+    position: relative;
+    border: 1px solid lightgray;
+    margin: 138px 10px 10px 15px;
+    width: 200px;
+    height: 22px;
+    display: flex;
+    align-items: flex-end;
+}
+.form-file a {
+    display: inline-block;
+    margin-left: 5px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    text-decoration: none;
+    color: black;
+}
+.corner-triangle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    transform: rotate(270deg);
+    border-left: 20px solid transparent;
+    border-top: 20px solid ;
+}
+.end-decode {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.rep-mail,
+.footer-icon {
+    margin: 10px 15px;
+}
+.rep-mail {
+    display: flex;
+    gap: 10px;
+}
+.btn-rep-email,
+.btn-forward-email,
+.footer-icon button{
+    width: auto;
+    font-size: 15px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid lightgray;
+    background: #fff;
+    cursor: pointer;
+}
+.btn-rep:hover,
+.btn-forward-email:hover,
+.footer-icon button:hover{
+    background: #BEDBED;
+    border: 1px solid #466EB4;
+}
+
+/*_____Form Seen Mail_____*/
+.form-seen {
+    position: absolute;
+    background: #fff;
+    margin-left: 10px;
+    width: calc(100% - 20px);
+    height: 90vh;
+    top: 10vh;
+    z-index: 96;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.form-seen.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
 /* ___Reponsive___ */
 @media (max-width: 420px) {
     .sidebar li .tooltip{
         display: none;
     }
+}
+/* Màu cho các hàng chưa đọc */
+.email-row.unread {
+    background-color: lightgray;
+}
+
+.email-row.read {
+    background-color: #fff; 
 }
