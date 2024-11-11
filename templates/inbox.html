@@ -188,12 +188,12 @@
                         {% for email in sent_emails %}
                         {% if not email.is_deleted %}
                         <tr id="email-{{ email.id }}">
-                            <td><input type="checkbox" class="email-checkbox-send" data-email-id="{{ email.id }}"></td>
+                            <td><input type="checkbox" class="email-checkbox-send data-email-id="{{ email.id }}""></td>
                             <td>{{ email.receiver_email }}</td>
                             <td>{{ email.subject }}</td>
-                            <td>{{ email.local_time }}</td>
+                            <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <td class="see">
-                                <a class="btn-show-details">
+                                <a href="{{ url_for('decrypt_email', email_id=email.id) }}" class="btn-show-details">
                                     <i class="bx bx-envelope-open"></i>
                                 </a>
                             </td>
@@ -289,7 +289,7 @@
                 </div>
                 <div id="attachmentsContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsList" style="display: flex; overflow: auto;"></div>
+                    <div id="attachmentsList" style="display: flex;"></div>
                 </div>
                 <div id="noAttachmentsContent">
                     <p style="display: none;">Không có tệp đính kèm.</p>
@@ -318,6 +318,8 @@
             <!--Đọc thư đã gửi-->
             <div id="formSeen" class="form-seen">
                 <h1>Nội dung Email đã gửi</h1>
+                <p>Thông tin: <span id="messEmail"></span></p>
+                <p>Người gửi: <span id="sendEmail"></span></p>
                 <p>Người nhận: <span id="receiverEmail"></span></p>
                 <p>Tiêu đề: <span id="subjectSeen"></span></p>
                 <div id="bodySeenContent">
@@ -346,6 +348,7 @@
                     </div>
                 </div>
             </div>
+
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>

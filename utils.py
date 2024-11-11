@@ -1,5 +1,4 @@
-
-
+# import PyPDF2
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Cipher import AES
@@ -8,6 +7,8 @@ from Crypto.Hash import SHA256
 import base64
 import os
 from typing import Optional
+
+from pymupdf import Document
 
 
 def generate_keys() -> tuple:
@@ -92,54 +93,36 @@ def create_signature(data: str, private_key: bytes) -> str:
     signature = pkcs1_15.new(private_key).sign(h)
     return base64.b64encode(signature).decode('utf-8')
 
-# def verify_signature(data: str, signature: str, public_key: bytes) -> bool:
-#     public_key = RSA.import_key(public_key)
-#     h = SHA256.new(data.encode('utf-8'))
-#     try:
-#         pkcs1_15.new(public_key).verify(h, base64.b64decode(signature))
-#         return True
-#     except (ValueError, TypeError):
-#         return False
 
-# def encrypt_image(image_path: str, public_key: bytes) -> Optional[bytes]:
-#     aes_key = generate_aes_key()  # Tạo khóa AES ngẫu nhiên
+# def get_pdf_preview(file_path):
 #     try:
-#         with open(image_path, 'rb') as image_file:  # Mở hình ảnh ở chế độ đọc nhị phân
-#             image_data = image_file.read()  # Đọc nội dung hình ảnh
-#
-#         encrypted_data = aes_encrypt(image_data, aes_key)  # Mã hóa dữ liệu hình ảnh sử dụng AES
-#
-#         # Mã hóa khóa AES sử dụng RSA
-#         encrypted_aes_key = rsa_encrypt(base64.b64encode(aes_key).decode('utf-8'), public_key)
-#
-#         # Lưu cả khóa AES mã hóa và dữ liệu mã hóa vào một tệp mới
-#         encrypted_image_path = image_path + '.enc'
-#         with open(encrypted_image_path, 'wb') as encrypted_image_file:
-#             encrypted_image_file.write(encrypted_aes_key.encode('utf-8') + b'\n')  # Lưu khóa AES đã mã hóa
-#             encrypted_image_file.write(encrypted_data)  # Lưu dữ liệu hình ảnh đã mã hóa
-#
-#         return encrypted_image_path
+#         with open(file_path, 'rb') as file:
+#             reader = PyPDF2.PdfReader(file)
+#             if len(reader.pages) > 0:
+#                 first_page = reader.pages[0]
+#                 text = first_page.extract_text()
+#                 return text[:100] if text else "Không thể trích xuất văn bản từ trang PDF này."
+#             else:
+#                 return "Tệp PDF không có trang nào."
 #     except Exception as e:
-#         print(f"Xảy ra lỗi khi mã hóa hình ảnh: {e}")
-#         return None
-# def decrypt_image(encrypted_image_path: str, private_key: bytes) -> Optional[bytes]:
+#         return f"Không thể đọc tệp PDF: {str(e)}"
+#
+# def get_docx_preview(file_path):
 #     try:
-#         with open(encrypted_image_path, 'rb') as encrypted_image_file:
-#             encrypted_aes_key = encrypted_image_file.readline().decode('utf-8').strip()  # Đọc khóa AES đã mã hóa
-#             encrypted_data = encrypted_image_file.read()  # Đọc phần còn lại của tệp (dữ liệu mã hóa)
-#
-#         # Giải mã khóa AES sử dụng RSA
-#         aes_key = base64.b64decode(rsa_decrypt(encrypted_aes_key, private_key))
-#
-#         # Giải mã dữ liệu hình ảnh sử dụng khóa AES đã giải mã
-#         decrypted_image_data = aes_decrypt(encrypted_data, aes_key)
-#
-#         # Lưu dữ liệu hình ảnh đã giải mã vào một tệp mới
-#         decrypted_image_path = encrypted_image_path.replace('.enc', '_decrypted.png')  # Thay đổi tên tệp
-#         with open(decrypted_image_path, 'wb') as decrypted_image_file:
-#             decrypted_image_file.write(decrypted_image_data)  # Lưu dữ liệu hình ảnh đã giải mã
-#
-#         return decrypted_image_path
+#         doc = Document(file_path)
+#         text = ''
+#         for para in doc.paragraphs:
+#             text += para.text + '\n'
+#         return text[:1000] if text else "Không thể trích xuất văn bản từ tệp Word này."
 #     except Exception as e:
-#         print(f"Xảy ra lỗi khi giải mã hình ảnh: {e}")
-#         return None
+#         return f"Không thể đọc tệp Word: {str(e)}"
+
+
+
+# def get_text_preview(file_path):
+#     try:
+#         with open(file_path, 'r', encoding='utf-8') as file:
+#             text = file.read()
+#         return text[:1000] if text else "Không thể trích xuất văn bản từ tệp này."
+#     except Exception as e:
+#         return f"Không thể đọc tệp văn bản: {str(e)}"

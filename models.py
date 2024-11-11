@@ -29,3 +29,9 @@ class EncryptedEmail(db.Model):
     trash_date = db.Column(db.DateTime)
     is_read = db.Column(db.Boolean, default=False)
     # image = db.Column(db.String, nullable=True)  # Add this line for image support
+
+class EncryptForward(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    id_body = db.Column(db.Integer, db.ForeignKey('encrypted_email.id'), nullable=False)
+    key_sender = db.Column(db.Text, nullable=False)
+    key_receiver = db.Column(db.Text, nullable=False)
