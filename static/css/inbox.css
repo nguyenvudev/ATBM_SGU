@@ -832,8 +832,7 @@ th {
 .content {
     margin: 0px 15px;
     padding: 5px 5px;
-    height: 200px;
-    max-height: 200px;
+    max-height: 250px;
     overflow: auto;
     font-size: 18px;
 }
@@ -946,7 +945,7 @@ th {
 }
 /* Màu cho các hàng chưa đọc */
 .email-row.unread {
-    background-color: #DBE9F2; 
+    background-color: lightgray;
 }
 
 .email-row.read {

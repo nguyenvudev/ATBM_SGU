@@ -190,13 +190,18 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById('subjectEmail').innerText = data.subject;
 
                     if (data.decrypted_body) {
-                        document.getElementById('decryptedBody').innerText = data.decrypted_body;
+                        // Sử dụng innerText để tránh việc hiển thị các thẻ HTML
+                        let decryptedBody = data.decrypted_body; // Chuyển đổi các ký tự xuống dòng thành thẻ <br>
+                        decryptedBody = decryptedBody.replace(/\n/g, '<br>');
+                        document.getElementById('decryptedBody').innerHTML = decryptedBody;
+
                         document.getElementById('bodyContent').style.display = 'block';
                         document.getElementById('noDecryptedBody').style.display = 'none';
                     } else {
                         document.getElementById('bodyContent').style.display = 'none';
                         document.getElementById('noDecryptedBody').style.display = 'block';
                     }
+
 
                     if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
                         let attachmentsHTML = '';
@@ -206,9 +211,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="merge-file">
                                     <div class="form-file">
                                         <div class="line">
-                                            ${fileIcon.icon}
+                                            ${fileIcon.icon} <!-- Icon lớn cho loại tệp -->
                                         </div>
                                         <a href="${attachment.path}" download>
+                                            <span class="icon-small">${fileIcon.icon}</span> <!-- Icon nhỏ cạnh tên tệp -->
                                             ${attachment.filename}
                                         </a>
                                         <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
@@ -216,6 +222,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </div>
                             `;
                         });
+
                         document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
                         document.getElementById('attachmentsContent').style.display = 'block';
                         document.getElementById('noAttachmentsContent').style.display = 'none';

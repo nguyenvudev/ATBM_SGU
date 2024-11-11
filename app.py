@@ -275,15 +275,28 @@ def decrypt_email(email_id):
         if not private_key:
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
+        # Giải mã khóa AES
         decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
+
 
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
 
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8')
 
+
+        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+
+        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
+        decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
+        decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
+
+        # Loại bỏ khoảng trắng dư thừa ở đầu dòng đầu tiên
+#        decrypted_body = '\n'.join([line.lstrip() for line in decrypted_body.split('\n')])
+
+        # Giải mã các tệp đính kèm
         attachments = json.loads(email.attachments)
         for attachment in attachments:
             encrypted_data = bytes.fromhex(attachment['content'])
