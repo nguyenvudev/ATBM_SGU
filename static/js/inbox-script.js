@@ -190,8 +190,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById('subjectEmail').innerText = data.subject;
 
                     if (data.decrypted_body) {
-                        // Sử dụng innerText để tránh việc hiển thị các thẻ HTML
-                        let decryptedBody = data.decrypted_body; // Chuyển đổi các ký tự xuống dòng thành thẻ <br>
+                        let decryptedBody = data.decrypted_body; 
                         decryptedBody = decryptedBody.replace(/\n/g, '<br>');
                         document.getElementById('decryptedBody').innerHTML = decryptedBody;
 
@@ -254,8 +253,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 return { icon: '<i class="bx bxs-file icon-file"></i>', color: 'black' };
                         }
                     }
-
-
                     emailRow.classList.remove('unread');
                     emailRow.classList.add('read');
                 })
@@ -265,55 +262,44 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // ----- Đóng form khi click ngoài form ----- //
     document.addEventListener('click', function(event) {
-        //if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
-        //    closeCreateMail();
-        //}
         if (!formRecoverKey.contains(event.target) && !event.target.closest('.recover-key')) {
             closeFormRecoverKey();
         }
-        //if (formSeenMail && !formSeenMail.contains(event.target) && !event.target.closest('.btn-show-details')) {
-        //    hideFormSeen();
-        //}
     });
 });
 
 ///_____________________Ẩn hiện nút Delete_____________________///
 // ---- Nút Delete của form thư đến ---- //
 function toggleDeleteIconReceived() {
-   let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
-   let deleteIcon = document.getElementById('delete-icon-1');
-   deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
-}
-
+    let checkboxesChecked = document.querySelectorAll('.email-checkbox-received:checked').length > 0;
+    let deleteIcon = document.getElementById('delete-icon-1');
+    deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
+} 
 document.getElementById('select-all-received').addEventListener('change', function(event) {
-   let checkboxes = document.querySelectorAll('.email-checkbox-received');
-   checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
-   toggleDeleteIconReceived();
+    let checkboxes = document.querySelectorAll('.email-checkbox-received');
+    checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
+    toggleDeleteIconReceived();
 });
-
 document.querySelectorAll('.email-checkbox-received').forEach(checkbox => {
-   checkbox.addEventListener('change', toggleDeleteIconReceived);
+    checkbox.addEventListener('change', toggleDeleteIconReceived);
 });
-
 toggleDeleteIconReceived();
-
 // ---- Nút Delete của form thư đã gửi ---- //
 function toggleDeleteIconSend() {
-   let checkboxesChecked = document.querySelectorAll('.email-checkbox-send:checked').length > 0;
-   let deleteIcon = document.getElementById('delete-icon-2');
-   deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
+    let checkboxesChecked = document.querySelectorAll('.email-checkbox-send:checked').length > 0;
+    let deleteIcon = document.getElementById('delete-icon-2');
+    deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
 }
 
 document.getElementById('select-all-send').addEventListener('change', function(event) {
     let checkboxes = document.querySelectorAll('.email-checkbox-send');
     checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
     toggleDeleteIconSend();
-});
 
+}); 
 document.querySelectorAll('.email-checkbox-send').forEach(checkbox => {
     checkbox.addEventListener('change', toggleDeleteIconSend);
-});
-
+}); 
 toggleDeleteIconSend();
 
 // ---- Nút Delete của form thùng rác ---- //
@@ -334,6 +320,76 @@ document.querySelectorAll('.email-checkbox-trash').forEach(checkbox => {
 });
 
 toggleDeleteIconTrash();
+
+// ---- Chuyển đến thùng rác ---- //
+function moveToTrash(folderType) {
+    let emailIds = [];
+
+    if (folderType === 'received') {
+        document.querySelectorAll('.email-checkbox-received:checked').forEach(checkbox => {
+            emailIds.push(checkbox.getAttribute('data-email-id'));
+        });
+    } else if (folderType === 'sent') {
+        document.querySelectorAll('.email-checkbox-send:checked').forEach(checkbox => {
+            emailIds.push(checkbox.getAttribute('data-email-id'));
+        });
+    }
+
+    if (emailIds.length === 0) {
+        alert('Vui lòng chọn ít nhất một email.');
+        return;
+    }
+
+    fetch('/move_to_trash', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email_ids: emailIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            emailIds.forEach(id => {
+                const emailRow = document.getElementById(`email-${id}`);
+                if (emailRow) {
+                    emailRow.style.display = 'none';
+                }
+            });
+            updateTrashEmails();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi:', error);
+        alert('Đã xảy ra lỗi khi di chuyển email vào thùng rác.');
+    });
+}
+function updateTrashEmails() {
+    fetch('/get_trash_emails')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const trashTableBody = document.querySelector('.form-trash-mail tbody');
+                trashTableBody.innerHTML = '';
+
+                data.emails.forEach(email => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="email-checkbox-trash" data-email-id="${email.id}"></td>
+                        <td class="col-trash-1">${email.sender_email}</td>
+                        <td class="col-trash-2">${email.subject}</td>
+                        <td class="col-trash-3">${email.local_time}</td>
+                    `;
+                    trashTableBody.appendChild(row);
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching trash emails:', error));
+}
+
 
 ///__________Thông báo của việc thực hiện gửi maill__________///
 document.addEventListener("DOMContentLoaded", function() {
@@ -491,39 +547,39 @@ function updateSentEmails() {
 }
 
 ////////////////Chưa chỉnh///////////////////
-function moveToTrash() {
-    const selectedEmails = document.querySelectorAll('.email-checkbox-received:checked');
+// function moveToTrash() {
+//     const selectedEmails = document.querySelectorAll('.email-checkbox-received:checked');
 
-    if (selectedEmails.length === 0) {
-        alert('Vui lòng chọn ít nhất một email để xóa.');
-        return;
-    }
+//     if (selectedEmails.length === 0) {
+//         alert('Vui lòng chọn ít nhất một email để xóa.');
+//         return;
+//     }
 
-    const emailIds = Array.from(selectedEmails).map(checkbox => checkbox.getAttribute('data-email-id'));
+//     const emailIds = Array.from(selectedEmails).map(checkbox => checkbox.getAttribute('data-email-id'));
 
-    if (confirm('Bạn có chắc chắn muốn chuyển email đã chọn vào Thùng rác?')) {
-        fetch('/move_to_trash', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email_ids: emailIds })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Xóa email khỏi DOM ngay lập tức
-                selectedEmails.forEach(email => {
-                    email.closest('tr').remove(); // Xóa dòng tương ứng với email khỏi DOM
-                });
-            } else {
-                alert('Đã xảy ra lỗi khi chuyển email vào Thùng rác.');
-            }
-        })
-        .catch(error => {
-            console.error('Lỗi:', error);
-        });
-    }
-}
+//     if (confirm('Bạn có chắc chắn muốn chuyển email đã chọn vào Thùng rác?')) {
+//         fetch('/move_to_trash', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({ email_ids: emailIds })
+//         })
+//         .then(response => {
+//             if (response.ok) {
+//                 // Xóa email khỏi DOM ngay lập tức
+//                 selectedEmails.forEach(email => {
+//                     email.closest('tr').remove(); // Xóa dòng tương ứng với email khỏi DOM
+//                 });
+//             } else {
+//                 alert('Đã xảy ra lỗi khi chuyển email vào Thùng rác.');
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Lỗi:', error);
+//         });
+//     }
+// }
 
 function deleteSelectedTrash() {
     const selectedEmails = document.querySelectorAll('.email-checkbox-trash:checked');

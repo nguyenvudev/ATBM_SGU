@@ -120,7 +120,7 @@
                 <div class="head-received">
                     <span class="mail-received">Hộp thư đến</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash()" style="cursor: pointer;"></i>
+                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash('received')" style="cursor: pointer;"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
@@ -138,13 +138,13 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" >
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email-{{ email.id }}">
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
-                            <td>{{ email.decrypted_body | truncate(50) }}</td>
+                            <td>{{ email.decrypted_body | truncate(50) | e }}</td>
                             <!--Hiển thị tệp đính kèm-->
                             <td>
                                 {% if email.attachment %}
@@ -170,7 +170,7 @@
                 <div class="head-send">
                     <span class="mail-send">Thư đã gửi</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-2"></i>
+                        <i class='bx bx-trash' id="delete-icon-2" onclick="moveToTrash('sent')"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
@@ -186,8 +186,9 @@
                     </thead>
                     <tbody>
                         {% for email in sent_emails %}
-                        <tr>
-                            <td><input type="checkbox" class="email-checkbox-send"></td>
+                        {% if not email.is_deleted %}
+                        <tr id="email-{{ email.id }}">
+                            <td><input type="checkbox" class="email-checkbox-send" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.receiver_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time }}</td>
@@ -197,6 +198,7 @@
                                 </a>
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -223,10 +225,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for email in emails %}
+                        {% for email in trash_emails %}
                         <tr>
                             <td><input type="checkbox" class="email-checkbox-trash"></td>
-                            <td class="col-trash-1">{{ email.sender_email }}</td>
+                            <td class="col-trash-1">{{ email.sender_email }} | {{ email.receiver_email }}</td>
                             <td class="col-trash-2">{{ email.subject }}</td>
                             <td class="col-trash-3">{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                         </tr>

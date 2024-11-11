@@ -24,6 +24,8 @@ class EncryptedEmail(db.Model):
     encrypted_attachment_content = db.Column(db.Text, nullable=True)
     body_for_sender = db.Column(db.Text, nullable=True)  # Nội dung cho người gửi
     is_deleted = db.Column(db.Boolean, default=False)
+    receiver_deleted = db.Column(db.Boolean, default=False)
+    sender_deleted = db.Column(db.Boolean, default=False)
     trash_date = db.Column(db.DateTime)
     is_read = db.Column(db.Boolean, default=False)
     # image = db.Column(db.String, nullable=True)  # Add this line for image support
