@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import json
 from os.path import basename
-import pdfplumber
+# import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
 import os
-from models import db, User, EncryptedEmail
+from models import db, User, EncryptedEmail, EncryptForward
 from flask import redirect, url_for, session, render_template
 import pytz
 from flask import jsonify, request
@@ -99,6 +99,7 @@ def login():
             session['email'] = user.email
             session['username'] = user.username
             session['private_key'] = user.private_key
+            session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
         return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
@@ -106,43 +107,93 @@ def login():
     # return render_template('inbox.html')  # Change this to 'index.html'
 
 # Thông báo đăng ký thành công
-# Thêm hiện thư đã gửi
+# thêm hiện thư đã gửi
+# @app.route('/inbox', methods=['GET'])
+# def inbox():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+#
+#     search_query = request.args.get('search', '')
+#     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+#
+#     # Lấy danh sách email nhận và sắp xếp theo thời gian giảm dần
+#     received_emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
+#
+#     if search_query:
+#         received_emails = received_emails.filter(
+#             (User.email.ilike(f'%{search_query}%')) |
+#             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
+#         ).join(User, User.id == EncryptedEmail.sender_id)
+#
+#     # Order received emails by timestamp descending
+#     received_emails = received_emails.order_by(EncryptedEmail.timestamp.desc()).all()
+#
+#     # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
+#     sent_emails = (
+#         db.session.query(
+#             EncryptedEmail.subject,
+#             EncryptedEmail.timestamp,
+#             User.email.label('receiver_email')
+#         )
+#         .join(User, User.id == EncryptedEmail.receiver_id)
+#         .filter(EncryptedEmail.sender_id == session['user_id'])
+#         .order_by(EncryptedEmail.timestamp.desc())  # Ensure descending order
+#         .all()
+#     )
+#
+#
+#     for email in received_emails:
+#         # sender = User.query.get(email.sender_id)
+#         sender = db.session.get(User, email.sender_id)
+#         email.sender_email = sender.email if sender else "Người gửi không xác định"
+#
+#         # Giải mã nội dung email
+#         decrypted_body = None
+#         if email.timestamp:
+#             utc_time = email.timestamp
+#             email.local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+#         else:
+#             email.local_time = None
+#
+#         try:
+#             private_key = session.get('private_key')
+#             if private_key:
+#                 decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+#                 decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+#                 decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
+#                 decrypted_body = decrypted_body_bytes.decode('utf-8')
+#             email.decrypted_body = decrypted_body
+#         except Exception as e:
+#             email.decrypted_body = "Giải mã thất bại."
+#         # Chuyển đổi thời gian cho email đã gửi
+#     email_data = []
+#     for email in sent_emails:
+#         local_time = email.timestamp.replace(tzinfo=pytz.utc).astimezone(local_tz)
+#         email_data.append({
+#             'receiver_email': email.receiver_email,
+#             'subject': email.subject,
+#             'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
+#         })
+#
+#     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
+
+
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    search_query = request.args.get('search', '')
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 
     # Lấy danh sách email nhận và sắp xếp theo thời gian giảm dần
     received_emails = EncryptedEmail.query.filter_by(receiver_id=session['user_id'])
 
-    if search_query:
-        received_emails = received_emails.filter(
-            (User.email.ilike(f'%{search_query}%')) |
-            (EncryptedEmail.subject.ilike(f'%{search_query}%'))
-        ).join(User, User.id == EncryptedEmail.sender_id)
-
     # Order received emails by timestamp descending
     received_emails = received_emails.order_by(EncryptedEmail.timestamp.desc()).all()
 
-    # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
-    sent_emails = (
-        db.session.query(
-            EncryptedEmail.subject,
-            EncryptedEmail.timestamp,
-            User.email.label('receiver_email')
-        )
-        .join(User, User.id == EncryptedEmail.receiver_id)
-        .filter(EncryptedEmail.sender_id == session['user_id'])
-        .order_by(EncryptedEmail.timestamp.desc())  # Ensure descending order
-        .all()
-    )
-
-
     for email in received_emails:
-        sender = User.query.get(email.sender_id)
+        sender = db.session.get(User, email.sender_id)
+        keyaes_email_sender = EncryptForward.query.filter_by(id_body=email.id).first()
         email.sender_email = sender.email if sender else "Người gửi không xác định"
 
         # Giải mã nội dung email
@@ -156,25 +207,45 @@ def inbox():
         try:
             private_key = session.get('private_key')
             if private_key:
-                decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+                decrypted_aes_key = rsa_decrypt(keyaes_email_sender.key_receiver, private_key)
                 decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
                 decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
                 decrypted_body = decrypted_body_bytes.decode('utf-8')
             email.decrypted_body = decrypted_body
         except Exception as e:
             email.decrypted_body = "Giải mã thất bại."
-        # Chuyển đổi thời gian cho email đã gửi
-    email_data = []
-    for email in sent_emails:
-        local_time = email.timestamp.replace(tzinfo=pytz.utc).astimezone(local_tz)
-        email_data.append({
-            'receiver_email': email.receiver_email,
-            'subject': email.subject,
-            'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
-        })
 
-    return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data)
 
+    # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
+    sent_emails = EncryptedEmail.query.filter_by(sender_id=session['user_id'])
+
+    # Order received emails by timestamp descending
+    sent_emails = sent_emails.order_by(EncryptedEmail.timestamp.desc()).all()
+    for email_sent in sent_emails:
+        receiver = db.session.get(User, email_sent.receiver_id)
+        aeskey_email_receiver = EncryptForward.query.filter_by(id_body=email_sent.id).first()
+        email_sent.receiver_email = receiver.email if receiver else "Người nhận không xác định"
+
+        # Giải mã nội dung email
+        decrypted_body = None
+        if email_sent.timestamp:
+            utc_time = email_sent.timestamp
+            email_sent.local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        else:
+            email_sent.local_time = None
+
+        try:
+            private_key = session.get('private_key')
+            if private_key:
+                decrypted_aes_key = rsa_decrypt(aeskey_email_receiver.key_sender, private_key)
+                decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+                decrypted_body_bytes = aes_decrypt(bytes.fromhex(email_sent.body), decrypted_aes_key_bytes)
+                decrypted_body = decrypted_body_bytes.decode('utf-8')
+            email_sent.decrypted_body = decrypted_body
+        except Exception as e:
+            email_sent.decrypted_body = "Giải mã thất bại."
+
+    return render_template('inbox.html', received_emails=received_emails, sent_emails=sent_emails)
 
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
@@ -195,12 +266,20 @@ def send_email():
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
+        # Generate AES key and encrypt email body
         aes_key = generate_aes_key()
         encrypted_body = aes_encrypt(body.encode('utf-8'), aes_key)
-        encrypted_aes_key = rsa_encrypt(aes_key.hex(), receiver.public_key)
+
+        # Encrypt the AES key with the receiver's public key
+        encrypted_aes_key_receiver = rsa_encrypt(aes_key.hex(), receiver.public_key)
+        encrypted_aes_key_sender = rsa_encrypt(aes_key.hex(), session['public_key'])
         signature = create_signature(body, session['private_key'])
 
-        # Encrypt multiple attachments
+        # Save a separate encrypted version for the sender to view later
+        sender_public_key = session['public_key']
+        # encrypted_body_for_sender = rsa_encrypt(body, sender_public_key)
+
+        # Encrypt and save multiple attachments
         attachments = request.files.getlist('attachment')
         encrypted_attachments = []
         for attachment in attachments:
@@ -211,25 +290,32 @@ def send_email():
                     "filename": encrypted_filename,
                     "content": encrypted_data.hex()
                 })
-
-                # Save the encrypted file
                 os.makedirs('attachments', exist_ok=True)
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in database
+        # Store email and attachments in the database
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
             subject=subject,
             body=encrypted_body.hex(),
-            aes_key=encrypted_aes_key,
+            aes_key=encrypted_aes_key_receiver,
             signature=signature,
-            attachments=json.dumps(encrypted_attachments)  # Store attachment metadata as JSON
+            # body_for_sender=encrypted_body_for_sender,  # Encrypted body for sender
+            attachments=json.dumps(encrypted_attachments)
         )
+
         db.session.add(email)
         db.session.commit()
         flash("Email đã được gửi.")
+        forward_mail = EncryptForward(
+            id_body=email.id,
+            key_sender=encrypted_aes_key_sender,
+            key_receiver=encrypted_aes_key_receiver
+        )
+        db.session.add(forward_mail)
+        db.session.commit()
         return redirect(url_for('inbox'))
 
     return render_template('inbox.html')
@@ -241,33 +327,71 @@ def decrypt_email(email_id):
         return redirect(url_for('login'))
 
     email = EncryptedEmail.query.get_or_404(email_id)
-
-    if not email.is_read:
-        email.is_read = True
-        db.session.commit()
-
     decrypted_body = None
     decrypted_attachments = []
     decryption_error = None
 
+    # Kiểm tra nếu email là của người gửi
     is_sent_email = email.sender_id == session['user_id']
+    keyAES_email = EncryptForward.query.filter_by(id_body=email_id).first()
+
     if is_sent_email:
+        # Người gửi có thể giải mã nội dung đã gửi
+        try:
+            private_key = session.get('private_key')
+            if not private_key:
+                raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
+
+            # Giải mã khóa AES bằng RSA
+            aes_decrypt_sender = rsa_decrypt(keyAES_email.key_sender, private_key)
+            if aes_decrypt_sender is None:
+                raise ValueError("Giải mã khóa AES không thành công.")
+
+            aes_decrypt_sender_bytes = bytes.fromhex(aes_decrypt_sender)
+
+            # Giải mã nội dung email và giữ nguyên định dạng xuống dòng
+            decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), aes_decrypt_sender_bytes)
+            decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
+
+            # Giải mã tệp đính kèm nếu có
+            attachments = json.loads(email.attachments)
+            for attachment in attachments:
+                encrypted_data = bytes.fromhex(attachment['content'])
+                decrypted_attachment = aes_decrypt(encrypted_data, aes_decrypt_sender_bytes)
+                decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
+
+                with open(decrypted_attachment_path, 'wb') as decrypted_file:
+                    decrypted_file.write(decrypted_attachment)
+
+                clean_filename = os.path.basename(decrypted_attachment_path).replace("decrypted_", "").replace(
+                    "encrypted_", "")
+                decrypted_attachments.append({
+                    'path': url_for('download_decrypted_file', file_path=decrypted_attachment_path),
+                    'filename': clean_filename
+                })
+        except Exception as e:
+            decryption_error = f"Giải mã thất bại: {str(e)}"
+        receiver_email = db.session.get(User, email.receiver_id)
         return jsonify({
-            'message': "Đây là email bạn đã gửi. Không cần giải mã.",
+            'message': "Đây là email bạn đã gửi.",
             'subject': email.subject,
-            'sender_email': None,
-            'decrypted_body': None,
-            'decrypted_attachments': []
+            'send_email': session['email'],  # Địa chỉ email của người gửi
+            'receiver_email': receiver_email.email,
+            'decrypted_body_send': decrypted_body,
+            'decryption_error': decryption_error,
+            'decrypted_attachments': decrypted_attachments
         })
 
-    sender = User.query.get(email.sender_id)
+    # Logic giải mã cho người nhận
+    # sender = User.query.get(email.sender_id)
+    sender = db.session.get(User, email.sender_id)
+
     try:
         private_key = session.get('private_key')
         if not private_key:
             raise ValueError("Không tìm thấy khóa riêng tư trong phiên.")
 
-        # Giải mã khóa AES
-        decrypted_aes_key = rsa_decrypt(email.aes_key, private_key)
+        decrypted_aes_key = rsa_decrypt(keyAES_email.key_receiver, private_key)
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
@@ -277,16 +401,11 @@ def decrypt_email(email_id):
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 
-        # Loại bỏ khoảng trắng dư thừa ở đầu dòng đầu tiên
-#        decrypted_body = '\n'.join([line.lstrip() for line in decrypted_body.split('\n')])
-
-        # Giải mã các tệp đính kèm
         attachments = json.loads(email.attachments)
         for attachment in attachments:
             encrypted_data = bytes.fromhex(attachment['content'])
             decrypted_attachment = aes_decrypt(encrypted_data, decrypted_aes_key_bytes)
             decrypted_attachment_path = os.path.join('attachments', 'decrypted_' + attachment['filename'])
-
             with open(decrypted_attachment_path, 'wb') as decrypted_file:
                 decrypted_file.write(decrypted_attachment)
 
@@ -340,7 +459,8 @@ def download_attachment(email_id):
                 with open(decrypted_file_path, 'wb') as decrypted_file:
                     decrypted_file.write(decrypted_body)
 
-                return send_file(decrypted_file_path, as_attachment=True)  # Tải file đã giải mã về
+                file_name = basename(decrypted_file_path).replace("decrypted_", "").replace("encrypted_", "")
+                return send_file(decrypted_file_path, as_attachment=True, download_name=file_name)  # Tải file đã giải mã về
 
             except Exception as e:
                 return f"Không thể giải mã file đính kèm: {str(e)}"
@@ -378,9 +498,8 @@ def download_decrypted_file():
 
     if file_path and os.path.exists(file_path):
         # Lấy tên file gốc để đặt tên cho file tải xuống
-        filename = os.path.basename(file_path)
-
-        # Sử dụng hàm `send_file` để gửi file với đúng định dạng
+        filename = os.path.basename(file_path).replace("decrypted_", "").replace("encrypted_", "")
+        # Sử dụng hàm `send_file` có sẵn để gửi file với đúng định dạng
         return send_file(file_path, as_attachment=True, download_name=filename)
 
     return "Không tìm thấy tệp đã giải mã."
