@@ -4,8 +4,7 @@ from os.path import basename
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
-from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, \
-    jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
@@ -115,7 +114,8 @@ def login():
 def inbox():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-
+    
+    search_query = request.args.get('search', '')
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 
     # Lấy danh sách email nhận (không phải đã xóa)

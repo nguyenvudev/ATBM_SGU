@@ -8,7 +8,7 @@ import base64
 import os
 from typing import Optional
 
-from pymupdf import Document
+# from pymupdf import Document
 
 
 def generate_keys() -> tuple:
