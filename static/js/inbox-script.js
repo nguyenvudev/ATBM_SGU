@@ -32,6 +32,10 @@
         const mailRepBtn = document.querySelector('.btn-rep-email');
         const mailForwardBtn = document.querySelector('.btn-forward-email');
 
+//        test thư gửi
+//        const mailRepBtnSend = document.querySelector('.btn-rep-email_send');
+//        const mailForwardBtnSend = document.querySelector('.btn-forward-email_send');
+
         // Nút tắt
         const closeChangePassword = document.getElementById('close-change');
         const closeFormCreateMail = document.getElementById('close-compose');
@@ -137,7 +141,7 @@
             }
         }
 
-        // Mở và đóng trả lời thư
+        // Mở và đóng trả lời thư trong hộp thư đến
         mailRepBtn?.addEventListener('click', function() {
             formMailCreate.classList.add('active');
             document.getElementById('recipient').value = document.getElementById('senderEmail').innerText;
@@ -159,6 +163,22 @@
             document.getElementById('main').innerText = '';
         }
         closeFormCreateMail?.addEventListener('click', closeCreateMail);
+
+        // Mở và đóng trả lời thư trong thư đã gửi
+//        mailRepBtnSend?.addEventListener('click', function() {
+//            formMailCreate.classList.add('active');
+//            document.getElementById('recipient').value = document.getElementById('receiverEmail').innerText;
+//            document.getElementById('subject').value = '';
+//            document.getElementById('main').innerText = '';
+//        });
+//
+//        mailForwardBtnSend?.addEventListener('click', function() {
+//            formMailCreate.classList.add('active');
+//            document.getElementById('recipient').value = '';
+//            document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectSeen').innerText;
+//            document.getElementById('main').innerText =  document.getElementById('decryptedBodySeen').innerText;
+//        });
+
 
         // ----- Lấy thông tin cho formDecode ----- //
         document.querySelectorAll('.btn-show-decode').forEach(btn => {

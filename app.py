@@ -23,6 +23,9 @@ from utils import (
     aes_decrypt,
     create_signature,
     generate_aes_key,
+    generate_aes_key_from_password,
+    encrypt_with_password,
+    decrypt_with_password
 )
 import os
 from sqlalchemy.exc import IntegrityError
@@ -63,12 +66,14 @@ def register():
             return jsonify(success=False, message="Tên người dùng đã được sử dụng. Vui lòng chọn một tên khác.")
 
         # Băm mật khẩu và tạo người dùng
-        hashed_password = generate_password_hash(password)
         private_key, public_key = generate_keys()
         pem_private, pem_public = serialize_keys(private_key, public_key)
 
-        user = User(email=email, username=username, password=hashed_password, public_key=pem_public,
-                    private_key=pem_private)
+        private_key_pass = encrypt_with_password(password, pem_private)
+
+        hashed_password = generate_password_hash(password)
+
+        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass)
         db.session.add(user)
         db.session.commit()
 
@@ -102,7 +107,7 @@ def login():
             session['user_id'] = user.id
             session['email'] = user.email
             session['username'] = user.username
-            session['private_key'] = user.private_key
+            session['private_key'] = decrypt_with_password(password, user.private_key)
             session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
@@ -338,9 +343,6 @@ def send_email():
             receiver_id=receiver.id,
             subject=subject,
             body=encrypted_body.hex(),
-            aes_key=encrypted_aes_key_receiver,
-            signature=signature,
-            # body_for_sender=encrypted_body_for_sender,  # Encrypted body for sender
             attachments=json.dumps(encrypted_attachments)
         )
 
@@ -439,16 +441,8 @@ def decrypt_email(email_id):
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
-
-        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-
-        decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
-        decrypted_body = decrypted_body_bytes.decode('utf-8')
-
-
-        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-
         # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
+        decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 

@@ -900,6 +900,8 @@ th {
 }
 .btn-rep-email,
 .btn-forward-email,
+.btn-rep-email_send,
+.btn-forward-email_send,
 .footer-icon button{
     width: auto;
     font-size: 15px;
@@ -911,6 +913,7 @@ th {
 }
 .btn-rep:hover,
 .btn-forward-email:hover,
+.btn-forward-email_send:hover,
 .footer-icon button:hover{
     background: #BEDBED;
     border: 1px solid #466EB4;
