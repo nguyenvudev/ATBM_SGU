@@ -582,34 +582,63 @@ function updateTrashEmails() {
 
     // ----- Gửi nhiều file và chuyển thành dropdown ----- //
     let selectedFiles = [];
-    document.getElementById('attachment').addEventListener('change', function() {
-        const newFiles = Array.from(this.files);
 
-        newFiles.forEach(file => {
-            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                selectedFiles.push(file);
-            }
-        });
+document.getElementById('attachment').addEventListener('change', function() {
+    const newFiles = Array.from(this.files);
 
+    // Add new files to selectedFiles if not already present
+    newFiles.forEach(file => {
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+        }
+    });
+
+    // Update the files property to reflect the selected files
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    this.files = dataTransfer.files;
+
+    updateFileDropdown();
+});
+
+function updateFileDropdown() {
+    const fileDropdownContainer = document.getElementById('file-dropdown-container');
+    fileDropdownContainer.innerHTML = '';
+
+    const select = document.createElement('select');
+    select.className = 'file-dropdown';
+
+    // Populate the dropdown with selected files
+    selectedFiles.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file.name;
+        option.text = file.name;
+        select.appendChild(option);
+    });
+
+    fileDropdownContainer.appendChild(select);
+
+    // Add a Delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.innerText = 'Delete';
+    deleteButton.className = 'delete-button';
+    fileDropdownContainer.appendChild(deleteButton);
+
+    // Event listener for the Delete button
+    deleteButton.addEventListener('click', function() {
+        const selectedFileName = select.value;
+        selectedFiles = selectedFiles.filter(file => file.name !== selectedFileName);
+
+        // Update the files property to remove the selected file
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
-        this.files = dataTransfer.files;
+        document.getElementById('attachment').files = dataTransfer.files;
 
-        const fileDropdownContainer = document.getElementById('file-dropdown-container');
-        fileDropdownContainer.innerHTML = '';
-
-        const select = document.createElement('select');
-        select.className = 'file-dropdown';
-
-        selectedFiles.forEach(file => {
-            const option = document.createElement('option');
-            option.value = file.name;
-            option.text = file.name;
-            select.appendChild(option);
-        });
-
-        fileDropdownContainer.appendChild(select);
+        // Update the dropdown
+        updateFileDropdown();
     });
+}
+
 
     ///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
     document.getElementById('send-email-form').addEventListener('submit', function(event) {

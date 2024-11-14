@@ -6,6 +6,7 @@ from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from twilio.rest import oauth
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import send_file
 import os
@@ -39,14 +40,37 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)
 app.secret_key = os.urandom(24)
 db.init_app(app)
 
+app.config['GOOGLE_CLIENT_ID'] = "48872561168-d1kh3pprvn5c079mbcagl6on6mp8ssor.apps.googleusercontent.com"
+app.config['GOOGLE_CLIENT_SECRET'] = "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"
+from authlib.integrations.flask_client import OAuth
+
 with app.app_context():
     db.create_all()
+
+oauth = OAuth(app)
+google = oauth.register(
+    name = 'google',
+    client_id = app.config["GOOGLE_CLIENT_ID"],
+    client_secret = app.config["GOOGLE_CLIENT_SECRET"],
+    access_token_url = 'https://accounts.google.com/o/oauth2/token',
+    access_token_params = None,
+    authorize_url = 'https://accounts.google.com/o/oauth2/auth',
+    authorize_params = None,
+    api_base_url = 'https://www.googleapis.com/oauth2/v1/',
+    userinfo_endpoint = 'https://openidconnect.googleapis.com/v1/userinfo',  # This is only needed if using openId to fetch user info
+    client_kwargs = {'scope': 'openid email profile'},
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration"
+)
+
+# Đường dẫn để đăng nhập qua Google
+
 
 @app.route('/')
 def index():
     if 'user_id' in session:
         return redirect(url_for('inbox'))
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -70,6 +94,7 @@ def register():
         pem_private, pem_public = serialize_keys(private_key, public_key)
 
         private_key_pass = encrypt_with_password(password, pem_private)
+
 
         hashed_password = generate_password_hash(password)
 
@@ -114,6 +139,54 @@ def login():
         return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
 
     # return render_template('inbox.html')  # Change this to 'index.html'
+
+
+@app.route('/login/google')
+def google_login():
+    redirect_uri = url_for('google_authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+# Xử lý đăng nhập qua Google
+from authlib.jose import jwt
+from authlib.jose.errors import InvalidClaimError
+
+@app.route('/login/google/authorize')
+def google_authorize():
+    token = google.authorize_access_token()
+    id_token = token.get('id_token')
+
+    try:
+        # Decode and validate the ID Token
+        claims = jwt.decode(id_token, audience=app.config['GOOGLE_CLIENT_ID'])  # Validate the audience
+        claims.validate()  # Additional validation checks
+
+        # Check the 'iss' claim (issuer)
+        if claims.get('iss') != 'https://accounts.google.com':
+            raise InvalidClaimError('Invalid "iss" claim')
+
+        user_info = google.get('userinfo').json()
+
+        # Save user data in session
+        session['id_token'] = id_token
+        session['user_id'] = user_info['id']
+        session['email'] = user_info['email']
+        session['username'] = user_info['name']
+
+        # Check if the user exists in the database
+        user = User.query.filter_by(email=user_info['email']).first()
+        if user is None:
+            user = User(email=user_info['email'], username=user_info['name'])
+            db.session.add(user)
+            db.session.commit()
+
+        return redirect(url_for('inbox'))
+
+    except InvalidClaimError as e:
+        # Handle the error if 'iss' claim is invalid
+        return jsonify(success=False, message="Invalid 'iss' claim in ID Token.")
+    except Exception as e:
+        # Handle other exceptions
+        return jsonify(success=False, message=str(e))
 
 @app.route('/inbox', methods=['GET'])
 def inbox():
@@ -199,7 +272,7 @@ def inbox():
     #         'receiver_email': email.receiver_email,
     #         'subject': email.subject,
     #         'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
-    #     })
+    #     }
 # Lấy danh sách email trong thùng rác
     trash_emails = EncryptedEmail.query.filter(
         ((EncryptedEmail.receiver_id == session['user_id']) & (EncryptedEmail.receiver_deleted == True)) |

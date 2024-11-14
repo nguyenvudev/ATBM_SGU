@@ -138,7 +138,7 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email-{{ email.id }}">
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email1-{{ email.id }}">
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
@@ -267,7 +267,9 @@
                         <label for="attachment" class="file-label">
                             <i class='bx bx-file'></i>
                         </label>
-                        <input type="file" id="attachment" name="attachment" multiple style="display: none;">
+                        <input type="file" id="attachment" name="attachment" multiple style="<a href="{{ url_for('google_login') }}">
+                                <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
+                            </a>display: none;">
                         <div id="file-dropdown-container"></div>
                     </div>
                 </form>

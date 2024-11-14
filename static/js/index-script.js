@@ -15,6 +15,9 @@ function closeModal() {
 function showSuccessModal() {
     document.getElementById('successModal').style.display = 'block';
 }
+document.querySelector('.social-login-icon').addEventListener('click', function() {
+    window.location.href = "{{ url_for('google_login') }}";
+});
 
 // Chuyển hướng đến trang đăng nhập
 function redirectToLogin() {
