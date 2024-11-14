@@ -111,10 +111,9 @@ def login():
             session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
-        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
+        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  
 
     # return render_template('inbox.html')  # Change this to 'index.html'
-
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
@@ -150,7 +149,6 @@ def inbox():
         .all()
     )
 
-
     # Chuyển đổi thời gian và chuẩn bị dữ liệu cho danh sách email đã gửi
     email_data = []
     for email in sent_emails:
@@ -161,8 +159,7 @@ def inbox():
             'subject': email.subject,
             'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
         })
-        
-        
+
     for email in received_emails:
         sender = db.session.get(User, email.sender_id)
         keyaes_email_sender = EncryptForward.query.filter_by(id_body=email.id).first()
@@ -191,16 +188,8 @@ def inbox():
             email.decrypted_body = decrypted_body
         except Exception as e:
             email.decrypted_body = "Giải mã thất bại."
-        # Chuyển đổi thời gian cho email đã gửi
-    # email_data = []
-    # for email in sent_emails:
-    #     local_time = email.timestamp.replace(tzinfo=pytz.utc).astimezone(local_tz)
-    #     email_data.append({
-    #         'receiver_email': email.receiver_email,
-    #         'subject': email.subject,
-    #         'local_time': local_time.strftime('%Y-%m-%d %H:%M:%S')
-    #     })
-# Lấy danh sách email trong thùng rác
+
+    # Lấy danh sách email trong thùng rác
     trash_emails = EncryptedEmail.query.filter(
         ((EncryptedEmail.receiver_id == session['user_id']) & (EncryptedEmail.receiver_deleted == True)) |
         ((EncryptedEmail.sender_id == session['user_id']) & (EncryptedEmail.sender_deleted == True))
@@ -287,6 +276,68 @@ def get_trash_emails():
         })
 
     return jsonify({'success': True, 'emails': emails_data})
+
+# @app.route('/delete_emails', methods=['POST'])
+# def delete_emails():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+
+#     data = request.get_json()
+#     email_ids = data.get('emailIds', [])
+#     emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
+
+#     # Permanently delete the emails
+#     for email in emails:
+#         db.session.delete(email)
+
+#     db.session.commit()
+
+#     return jsonify({"message": "Emails deleted successfully"})  
+
+@app.route('/delete_emails', methods=['POST'])
+def delete_emails():
+    if 'user_id' not in session:
+        return jsonify({"success": False, "message": "Not authenticated"})
+
+    data = request.get_json()
+    email_ids = data.get('emailIds', [])
+    emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
+
+    # Xóa email vĩnh viễn từ thùng rác
+    for email in emails:
+        # Kiểm tra xem người dùng có quyền xóa email này không
+        if (email.receiver_id == session['user_id'] and email.receiver_deleted) or \
+           (email.sender_id == session['user_id'] and email.sender_deleted):
+            db.session.delete(email)
+        else:
+            return jsonify({"success": False, "message": "Không có quyền xóa email này"})
+
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Email đã được xóa thành công."})
+
+@app.route('/delete_all_trash', methods=['POST'])
+def delete_all_trash():
+    if 'user_id' not in session:
+        return jsonify({"success": False, "message": "Not authenticated"})
+
+    try:
+        # Lấy tất cả thư trong thùng rác của người dùng
+        emails_in_trash = EncryptedEmail.query.filter(
+            ((EncryptedEmail.receiver_id == session['user_id']) & (EncryptedEmail.receiver_deleted == True)) |
+            ((EncryptedEmail.sender_id == session['user_id']) & (EncryptedEmail.sender_deleted == True))
+        ).all()
+
+        # Xóa tất cả thư trong thùng rác
+        for email in emails_in_trash:
+            db.session.delete(email)
+
+        db.session.commit()
+
+        return jsonify({"success": True, "message": "Tất cả thư trong thùng rác đã được xóa thành công."})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Lỗi khi xóa thư: {str(e)}"})
 
 @app.route('/send', methods=['GET', 'POST'])
 def send_email():
@@ -381,6 +432,17 @@ def decrypt_email(email_id):
     is_sent_email = email.sender_id == session['user_id']
     keyAES_email = EncryptForward.query.filter_by(id_body=email_id).first()
 
+        # Định dạng thời gian gửi
+    # Thiết lập múi giờ cho thành phố Hồ Chí Minh
+    local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    
+    if email.timestamp:
+        local_time = email.timestamp.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        timestamp_formatted = local_time.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        timestamp_formatted = "Không xác định"
+
+        
     if is_sent_email:
         # Người gửi có thể giải mã nội dung đã gửi
         try:
@@ -409,8 +471,7 @@ def decrypt_email(email_id):
                 with open(decrypted_attachment_path, 'wb') as decrypted_file:
                     decrypted_file.write(decrypted_attachment)
 
-                clean_filename = os.path.basename(decrypted_attachment_path).replace("decrypted_", "").replace(
-                    "encrypted_", "")
+                clean_filename = os.path.basename(decrypted_attachment_path).replace("decrypted_", "").replace("encrypted_", "")
                 decrypted_attachments.append({
                     'path': url_for('download_decrypted_file', file_path=decrypted_attachment_path),
                     'filename': clean_filename
@@ -423,13 +484,13 @@ def decrypt_email(email_id):
             'subject': email.subject,
             'send_email': session['email'],  # Địa chỉ email của người gửi
             'receiver_email': receiver_email.email,
+            'timestamp': timestamp_formatted,  # Thời gian gửi
             'decrypted_body_send': decrypted_body,
             'decryption_error': decryption_error,
             'decrypted_attachments': decrypted_attachments
         })
 
     # Logic giải mã cho người nhận
-    # sender = User.query.get(email.sender_id)
     sender = db.session.get(User, email.sender_id)
 
     try:
@@ -441,8 +502,9 @@ def decrypt_email(email_id):
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
-        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
+
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
+
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 
@@ -466,11 +528,11 @@ def decrypt_email(email_id):
     return jsonify({
         'subject': email.subject,
         'sender_email': sender.email if sender else "Không xác định",
+        'timestamp': timestamp_formatted,  # Thời gian gửi
         'decrypted_body': decrypted_body,
         'decryption_error': decryption_error,
         'decrypted_attachments': decrypted_attachments
     })
-
 
 @app.route('/download_attachment/<int:email_id>', methods=['GET', 'POST'])
 def download_attachment(email_id):
