@@ -1,15 +1,43 @@
-import PyPDF2
+# import PyPDF2
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Cipher import AES
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Random import get_random_bytes
 import base64
 import os
 from typing import Optional
 
-from pymupdf import Document
+# from pymupdf import Document
 
+def generate_aes_key_from_password(password, salt):
+    # Tạo khóa AES từ mật khẩu người dùng
+    return PBKDF2(password, salt, dkLen=32, count=1000000)
+
+def encrypt_with_password(password, plaintext):
+    salt = get_random_bytes(16)  # Tạo salt ngẫu nhiên
+    key = generate_aes_key_from_password(password, salt)  # Tạo khóa AES từ mật khẩu
+    iv = get_random_bytes(16)  # Tạo IV ngẫu nhiên
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    padded_text = plaintext + (16 - len(plaintext) % 16) * chr(16 - len(plaintext) % 16)
+    ciphertext = cipher.encrypt(padded_text.encode())
+    # Mã hóa Base64 cho salt, iv, và ciphertext để dễ lưu trữ
+    return base64.b64encode(salt + iv + ciphertext).decode()
+
+# Hàm giải mã AES (chế độ CBC) sử dụng mật khẩu người dùng
+def decrypt_with_password(password, encrypted_data):
+    data = base64.b64decode(encrypted_data)
+    salt = data[:16]  # Lấy salt
+    iv = data[16:32]  # Lấy IV
+    ciphertext = data[32:]  # Lấy ciphertext
+    key = generate_aes_key_from_password(password, salt)  # Tạo khóa AES từ mật khẩu
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    decrypted_text = cipher.decrypt(ciphertext).decode()
+    padding_length = ord(decrypted_text[-1])
+    return decrypted_text[:-padding_length]  # Loại bỏ padding
 
 def generate_keys() -> tuple:
     key = RSA.generate(2048)  # Tạo cặp khóa RSA (khóa riêng và khóa công khai) với kích thước 2048-bit

@@ -120,7 +120,7 @@
                 <div class="head-received">
                     <span class="mail-received">Hộp thư đến</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash()" style="cursor: pointer;"></i>
+                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash('received')" style="cursor: pointer;"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
@@ -138,13 +138,13 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" >
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email-{{ email.id }}">
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
-                            <td>{{ email.decrypted_body | truncate(50) }}</td>
+                            <td>{{ email.decrypted_body | truncate(50) | e }}</td>
                             <!--Hiển thị tệp đính kèm-->
                             <td>
                                 {% if email.attachment %}
@@ -170,7 +170,7 @@
                 <div class="head-send">
                     <span class="mail-send">Thư đã gửi</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-2"></i>
+                        <i class='bx bx-trash' id="delete-icon-2" onclick="moveToTrash('sent')"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
@@ -186,17 +186,19 @@
                     </thead>
                     <tbody>
                         {% for email in sent_emails %}
-                        <tr>
-                            <td><input type="checkbox" class="email-checkbox-send"></td>
+                        {% if not email.is_deleted %}
+                        <tr id="email-{{ email.id }}">
+                            <td><input type="checkbox" class="email-checkbox-send" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.receiver_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time }}</td>
                             <td class="see">
-                                <a class="btn-show-details">
+                                <a href="{{ url_for('decrypt_email', email_id=email.id) }}" class="btn-show-details">
                                     <i class="bx bx-envelope-open"></i>
                                 </a>
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -218,13 +220,13 @@
                             <th class="col-checkbox"><input type="checkbox" id="select-all-trash"></th>
                             <th colspan="3" class="col-trash">
                                 Thư ở trong thư mục Thư rác hơn 30 ngày sẽ tự động bị xóa.
-                                <a href="#">Xóa ngay bay giờ</a>
+                                <a href="#" id="delete-now">Xóa ngay bay giờ</a>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for email in emails %}
-                        <tr>
+                        {% for email in trash_emails %}
+                        <tr data-email-id="{{ email.id }}">
                             <td><input type="checkbox" class="email-checkbox-trash"></td>
                             <td class="col-trash-1">{{ email.sender_email }}</td>
                             <td class="col-trash-2">{{ email.subject }}</td>
@@ -262,11 +264,11 @@
 
                     <div class="footer-create-mail">
                         <button type="submit">Gửi</button>
-                        <label for="attachment" class="file-label">
+                        <label for="attachment-create" class="file-label">
                             <i class='bx bx-file'></i>
                         </label>
-                        <input type="file" id="attachment" name="attachment" multiple style="display: none;">
-                        <div id="file-dropdown-container"></div>
+                        <input type="file" id="attachment-create" name="attachment" multiple style="display: none;">
+                        <div id="file-dropdown-create"></div>
                     </div>
                 </form>
             </div>
@@ -276,6 +278,7 @@
                 <h1>Nội dung Email</h1>
                 <p>Người gửi: <span id="senderEmail"></span></p>
                 <p>Tiêu đề: <span id="subjectEmail"></span></p>
+                <p>Thời gian: <span id="timeEmailReceived"></span></p>
                 <div id="bodyContent">
                     <p>Nội dung:</p>
                     <div class="content">
@@ -287,7 +290,7 @@
                 </div>
                 <div id="attachmentsContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsList" style="display: flex; overflow: auto;"></div>
+                    <div id="attachmentsList" style="display: flex;"></div>
                 </div>
                 <div id="noAttachmentsContent">
                     <p style="display: none;">Không có tệp đính kèm.</p>
@@ -295,11 +298,11 @@
                 <div class="position-end-decode">
                     <div class="end-decode">
                         <div class="rep-mail">
-                            <a class="btn-rep-email">
+                            <a class="btn-rep-email-received">
                                 <i class="bx bx-share"></i>
                                 <span>Trả lời</span>
                             </a>
-                            <a class="btn-forward-email">
+                            <a class="btn-forward-email-received">
                                 <i class="bx bx-share" style="transform: scaleX(-1);"></i>
                                 <span>Chuyển tiếp</span>
                             </a>
@@ -311,12 +314,40 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="form-rep-received" id="form-rep-received">
+                    <form action="{{ url_for('send_email') }}" class="form-rep-receiver" method="POST" enctype="multipart/form-data" onsubmit="updateBody()">
+                        <div class="head-rep-received">
+                            <p class="title-head-rep-received" id="title-received"></p>
+                            <div class="rep-received-icon">
+                                <i class='bx bx-x' id="close-rep-received"></i>
+                            </div>
+                        </div>
+    
+                        <input type="email" name="recipient" id="recipient-received" class="form-control" placeholder="Người nhận" required />
+                        <input type="text" name="subject" id="subject-received" class="form-control" placeholder="Tiêu đề" required />
+                        <div id="main-received" class="form-control-main" contenteditable="true"></div>
+                        <input type="hidden" name="body" id="hidden-body-received" required />
+    
+                        <div class="footer-rep-received">
+                            <button type="submit">Gửi</button>
+                            <label for="attachment-received" class="file-label">
+                                <i class='bx bx-file'></i>
+                            </label>
+                            <input type="file" id="attachment-received" name="attachment" multiple style="display: none;">
+                            <div id="file-dropdown-received"></div>
+                        </div>
+                    </form>
+                </div> 
             </div>
 
             <!--Đọc thư đã gửi-->
             <div id="formSeen" class="form-seen">
                 <h1>Nội dung Email đã gửi</h1>
+                <p>Thông tin: <span id="messEmail"></span></p>
+                <p>Người gửi: <span id="sendEmail"></span></p>
                 <p>Người nhận: <span id="receiverEmail"></span></p>
+                <p>Thời gian: <span id="timeEmailSent"></span></p>
                 <p>Tiêu đề: <span id="subjectSeen"></span></p>
                 <div id="bodySeenContent">
                     <p>Nội dung:</p>
@@ -334,8 +365,38 @@
                 <div id="noAttachmentsSeenContent">
                     <p style="display: none;">Không có tệp đính kèm.</p>
                 </div>
+           <!--hiển thị cái nút trả lời, quay lại-->
+<!--                <div class="position-end-decode">-->
+<!--                    <div class="end-decode">-->
+<!--                        <div class="rep-mail">-->
+<!--                            <a class="btn-rep-email_send">-->
+<!--                                <i class="bx bx-share"></i>-->
+<!--                                <span>Trả lời</span>-->
+<!--                            </a>-->
+<!--                            <a class="btn-forward-email_send">-->
+<!--                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>-->
+<!--                                <span>Chuyển tiếp</span>-->
+<!--                            </a>-->
+<!--                        </div>-->
+<!--                        <div class="footer-icon">-->
+<!--                            <a>-->
+<!--                                <button type="button" id="close-form-seen">Quay lại</button>-->
+<!--                            </a>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
                 <div class="position-end-seen">
                     <div class="end-seen">
+                        <div class="rep-mail">
+                            <a class="btn-rep-email-sent">
+                                <i class="bx bx-share"></i>
+                                <span>Trả lời</span>
+                            </a>
+                            <a class="btn-forward-email-sent">
+                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>
+                                <span>Chuyển tiếp</span>
+                            </a>
+                        </div>
                         <div class="footer-icon">
                             <a>
                                 <button type="button" id="close-form-seen">Quay lại</button>
@@ -343,7 +404,34 @@
                         </div>
                     </div>
                 </div>
+ 
+                <!--Form trả lời và chuyển tiếp của thư đã gửi-->
+                <div class="form-rep-sent" id="form-rep-sent">
+                    <form action="{{ url_for('send_email') }}" class="form-rep-seen" method="POST" enctype="multipart/form-data" onsubmit="updateBody()">
+                        <div class="head-rep-sent">
+                            <p class="title-head-rep-sent" id="title-sent"></p>
+                            <div class="rep-sent-icon">
+                                <i class='bx bx-x' id="close-rep-seen"></i>
+                            </div>
+                        </div>
+    
+                        <input type="email" name="recipient" id="recipient-sent" class="form-control" placeholder="Người nhận" required />
+                        <input type="text" name="subject" id="subject-sent" class="form-control" placeholder="Tiêu đề" required />
+                        <div id="main-sent" class="form-control-main" contenteditable="true"></div>
+                        <input type="hidden" name="body" id="hidden-body-sent" required />
+    
+                        <div class="footer-rep-seen">
+                            <button type="submit">Gửi</button>
+                            <label for="attachment-sent" class="file-label">
+                                <i class='bx bx-file'></i>
+                            </label>
+                            <input type="file" id="attachment-sent" name="attachment" multiple style="display: none;">
+                            <div id="file-dropdown-sent"></div>
+                        </div>
+                    </form>
+                </div>
             </div>
+
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
