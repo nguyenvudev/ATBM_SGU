@@ -111,7 +111,7 @@ def login():
             session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
-        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  # Error message
+        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  
 
     # return render_template('inbox.html')  # Change this to 'index.html'
 @app.route('/inbox', methods=['GET'])
