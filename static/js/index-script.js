@@ -18,9 +18,9 @@ function showSuccessModal() {
 
 // Chuyển hướng đến trang đăng nhập
 function redirectToLogin() {
-    closeModal();  // Đóng modal thành công
+    closeModal(); 
     document.getElementById('successModal').style.display = 'none';
-    showLogin();   // Hiển thị form đăng nhập
+    showLogin();  
 }
 
 // Hiển thị modal lỗi
@@ -46,7 +46,7 @@ document.querySelector('.register').addEventListener('submit', function(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccessModal(); // Hiển thị modal thành công nếu đăng ký thành công
+            showSuccessModal();
 
             // Tự động tải file khóa riêng tư
             setTimeout(() => {
@@ -64,14 +64,13 @@ document.querySelector('.register').addEventListener('submit', function(event) {
                     a.remove();
                 })
                 .catch(error => console.error('Error downloading key:', error));
-            }, 2000); // Đặt độ trễ để chờ modal hiện trước khi tải file
+            }, 2000);
         } else {
-            showErrorModal(data.message); // Hiển thị modal lỗi nếu có lỗi
+            showErrorModal(data.message);
         }
     })
     .catch(error => console.error('Error:', error));
 });
-
 
 // Hiển thị modal lỗi khi đăng nhập
 function showErrorModalLogin(message) {
@@ -95,7 +94,6 @@ document.querySelector('.login').addEventListener('submit', function(event) {
     })
     .then(response => {
         if (response.redirected) {
-            // Khi đăng nhập thành công, Flask sẽ tự chuyển hướng đến /inbox
             window.location.href = response.url;  // Chuyển hướng đến URL được trả về (inbox)
         } else {
             return response.json();  // Nếu không chuyển hướng, trả về JSON để kiểm tra lỗi
