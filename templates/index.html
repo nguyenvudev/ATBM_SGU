@@ -103,16 +103,12 @@
             <div class="social-login">
                 <h3>Log in via</h3>
                 <div class="social-icons">
-<!--                    <img src="./img/icons8-facebook-48.png" alt="" class="social-login-icon">-->
-<!--                    <img src="./img/icons8-google-48.png" alt="" class="social-login-icon">-->
-                     <img src="{{ url_for('static', filename='img/icons8-facebook-48.png') }}" alt="fb-icon" class="social-login-icon">
-                     <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
+                    <img src="{{ url_for('static', filename='img/icons8-facebook-48.png') }}" alt="fb-icon" class="social-login-icon">
+                    <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
                 </div>
             </div>
             <div class="option">
                 <p class="message">Not registered?
-                    <!-- <a href="{{ url_for('register') }}">Create an account</a> |
-                    <a href="{{ url_for('index') }}">Back</a> -->
                     <a onclick="showRegister()">Create an account</a>
                 </p>
             </div>
@@ -150,8 +146,6 @@
             </form>
             <div class="option">
                 <p class="message">Already register?
-                    <!-- <a href="{{ url_for('login') }}">Sign In</a> |
-                    <a href="{{ url_for('index') }}">Back</a></p> -->
                     <a onclick="showLogin()">Sign In</a>
                 </p>
             </div>

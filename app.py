@@ -1,19 +1,19 @@
-from datetime import datetime, timedelta
+import os
 import json
-from os.path import basename
+import pytz
+import base64
 import pdfplumber
+
+from os.path import basename
+from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import send_file
-import os
+from sqlalchemy.exc import IntegrityError
 from models import db, User, EncryptedEmail, EncryptForward
-from flask import redirect, url_for, session, render_template
-import pytz
-from flask import jsonify, request
-from bs4 import BeautifulSoup
+from werkzeug.security import generate_password_hash, check_password_hash
 from utils import (
     generate_keys,
     serialize_keys,
@@ -27,9 +27,6 @@ from utils import (
     encrypt_with_password,
     decrypt_with_password
 )
-import os
-from sqlalchemy.exc import IntegrityError
-import base64
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///email_encryption.db'
@@ -68,9 +65,7 @@ def register():
         # Băm mật khẩu và tạo người dùng
         private_key, public_key = generate_keys()
         pem_private, pem_public = serialize_keys(private_key, public_key)
-
         private_key_pass = encrypt_with_password(password, pem_private)
-
         hashed_password = generate_password_hash(password)
 
         user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass)
@@ -88,13 +83,11 @@ def register():
 
         # Gửi phản hồi JSON để client hiển thị modal thành công
         response = jsonify(success=True, message="Đăng ký thành công!")
-        response.headers[
-            'X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
+        response.headers['X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
 
         return response
 
     return render_template('index.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -113,7 +106,6 @@ def login():
 
         return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  
 
-    # return render_template('inbox.html')  # Change this to 'index.html'
 @app.route('/inbox', methods=['GET'])
 def inbox():
     if 'user_id' not in session:
@@ -131,7 +123,6 @@ def inbox():
             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
         ).join(User, User.id == EncryptedEmail.sender_id)
 
-    # Order received emails by timestamp descending
     received_emails = received_emails.order_by(EncryptedEmail.timestamp.desc()).all()
 
     # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
@@ -145,7 +136,7 @@ def inbox():
         )
         .join(User, User.id == EncryptedEmail.receiver_id)
         .filter(EncryptedEmail.sender_id == session['user_id'], EncryptedEmail.sender_deleted == False)
-        .order_by(EncryptedEmail.timestamp.desc())  # Đảm bảo thứ tự giảm dần
+        .order_by(EncryptedEmail.timestamp.desc()) 
         .all()
     )
 
@@ -185,6 +176,10 @@ def inbox():
                 soup = BeautifulSoup(decrypted_body, 'html.parser')
                 decrypted_body = soup.get_text(separator=' ')
                 
+                # Chỉ giữ nội dung trước "----Forwarded message----" 
+                if "----Forwarded message----" in decrypted_body: 
+                    decrypted_body = decrypted_body.split("----Forwarded message----")[0]
+                
             email.decrypted_body = decrypted_body
         except Exception as e:
             email.decrypted_body = "Giải mã thất bại."
@@ -207,12 +202,10 @@ def inbox():
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data, trash_emails=trash_emails)
 
-
-
 @app.route('/move_to_trash', methods=['POST'])
 def move_to_trash():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     data = request.get_json()
     email_ids = data.get('email_ids')
@@ -223,10 +216,10 @@ def move_to_trash():
 
     try:
         for email_id in email_ids:
-            print(f"Attempting to find email with ID: {email_id}")  # Debugging log
+            print(f"Cố gắng tìm email có ID: {email_id}")  
             email = EncryptedEmail.query.get(email_id)
             
-            if not email:  # If no email is found
+            if not email:
                 return jsonify({"success": False, "message": f"Không tìm thấy email với ID {email_id}!"})
 
             # Kiểm tra thư đã nhận hay đã gửi dựa trên sender_id và receiver_id
@@ -248,62 +241,48 @@ def move_to_trash():
 @app.route('/get_trash_emails', methods=['GET'])
 def get_trash_emails():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'})
-
+        return jsonify({'success': False, 'message': 'Không được xác thực!!!'})
+    
     user_id = session['user_id']
     trash_emails = EncryptedEmail.query.filter(
         ((EncryptedEmail.receiver_id == user_id) & (EncryptedEmail.receiver_deleted == True)) |
         ((EncryptedEmail.sender_id == user_id) & (EncryptedEmail.sender_deleted == True))
     ).order_by(EncryptedEmail.timestamp.desc()).all()
-
+    
     emails_data = []
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     for email in trash_emails:
         sender = User.query.get(email.sender_id)
-        email.sender_email = sender.email if sender else "Người gửi không xác định"
-
+        # Kiểm tra nếu email này là của người dùng hiện tại
+        sender_email = sender.email if sender else "Người gửi không xác định"
+        if email.sender_id == user_id:
+            sender_email += " | tôi"
+        
+        # Xử lý thời gian
         if email.timestamp:
             utc_time = email.timestamp
-            email.local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+            local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         else:
-            email.local_time = None
+            local_time = None
 
         emails_data.append({
             'id': email.id,
-            'sender_email': email.sender_email,
+            'sender_email': sender_email,
             'subject': email.subject,
-            'local_time': email.local_time
+            'local_time': local_time
         })
-
+    
     return jsonify({'success': True, 'emails': emails_data})
-
-# @app.route('/delete_emails', methods=['POST'])
-# def delete_emails():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-
-#     data = request.get_json()
-#     email_ids = data.get('emailIds', [])
-#     emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
-
-#     # Permanently delete the emails
-#     for email in emails:
-#         db.session.delete(email)
-
-#     db.session.commit()
-
-#     return jsonify({"message": "Emails deleted successfully"})  
 
 @app.route('/delete_emails', methods=['POST'])
 def delete_emails():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     data = request.get_json()
     email_ids = data.get('emailIds', [])
     emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
 
-    # Xóa email vĩnh viễn từ thùng rác
     for email in emails:
         # Kiểm tra xem người dùng có quyền xóa email này không
         if (email.receiver_id == session['user_id'] and email.receiver_deleted) or \
@@ -319,7 +298,7 @@ def delete_emails():
 @app.route('/delete_all_trash', methods=['POST'])
 def delete_all_trash():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     try:
         # Lấy tất cả thư trong thùng rác của người dùng
@@ -335,8 +314,10 @@ def delete_all_trash():
         db.session.commit()
 
         return jsonify({"success": True, "message": "Tất cả thư trong thùng rác đã được xóa thành công."})
+    
     except Exception as e:
         db.session.rollback()
+        
         return jsonify({"success": False, "message": f"Lỗi khi xóa thư: {str(e)}"})
 
 @app.route('/send', methods=['GET', 'POST'])
@@ -350,13 +331,11 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
-            # return "Bạn không thể gửi email cho chính mình."
             flash("Bạn không thể gửi email cho chính mình.")
             return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
-            # return "Người nhận không tồn tại."
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
@@ -388,7 +367,6 @@ def send_email():
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in the database
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
@@ -399,19 +377,19 @@ def send_email():
 
         db.session.add(email)
         db.session.commit()
-        # return "Email đã được gửi."
         flash("Email đã được gửi.")
+        
         forward_mail = EncryptForward(
             id_body=email.id,
             key_sender=encrypted_aes_key_sender,
             key_receiver=encrypted_aes_key_receiver
         )
+        
         db.session.add(forward_mail)
         db.session.commit()
         return redirect(url_for('inbox'))
 
     return render_template('inbox.html')
-
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
@@ -432,7 +410,6 @@ def decrypt_email(email_id):
     is_sent_email = email.sender_id == session['user_id']
     keyAES_email = EncryptForward.query.filter_by(id_body=email_id).first()
 
-        # Định dạng thời gian gửi
     # Thiết lập múi giờ cho thành phố Hồ Chí Minh
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     
@@ -478,7 +455,9 @@ def decrypt_email(email_id):
                 })
         except Exception as e:
             decryption_error = f"Giải mã thất bại: {str(e)}"
+            
         receiver_email = db.session.get(User, email.receiver_id)
+        
         return jsonify({
             'message': "Đây là email bạn đã gửi.",
             'subject': email.subject,
@@ -502,9 +481,8 @@ def decrypt_email(email_id):
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
-
+        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 
@@ -528,7 +506,7 @@ def decrypt_email(email_id):
     return jsonify({
         'subject': email.subject,
         'sender_email': sender.email if sender else "Không xác định",
-        'timestamp': timestamp_formatted,  # Thời gian gửi
+        'timestamp': timestamp_formatted,
         'decrypted_body': decrypted_body,
         'decryption_error': decryption_error,
         'decrypted_attachments': decrypted_attachments
@@ -543,7 +521,6 @@ def download_attachment(email_id):
         if email.attachment and private_key:
             attachment_path = os.path.join('attachments', email.attachment)
 
-            # Đọc tệp đã mã hóa
             with open(attachment_path, 'rb') as file:
                 encrypted_data = file.read()
 
@@ -590,15 +567,14 @@ def change_password():
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, current_password):
-            # Cập nhật mật khẩu mới
             user.password = generate_password_hash(new_password)
-            db.session.commit()  # Lưu thay đổi vào cơ sở dữ liệu
+            db.session.commit() 
+            
             return "Mật khẩu đã được đổi thành công."
 
         return "Email hoặc mật khẩu hiện tại không đúng."
 
     return render_template('change_password.html')
-
 
 @app.route('/download_decrypted_file')
 def download_decrypted_file():
@@ -612,12 +588,10 @@ def download_decrypted_file():
 
     return "Không tìm thấy tệp đã giải mã."
 
-
 @app.errorhandler(IntegrityError)
 def handle_integrity_error(error):
     db.session.rollback()
     return "Đã xảy ra lỗi: " + str(error.orig), 400
-
 
 @app.route('/logout')
 def logout():
@@ -625,12 +599,10 @@ def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
 
-
 @app.before_request
 def refresh_session_lifetime():
     if 'user_id' in session:
         session.permanent = True
-
 
 if __name__ == '__main__':
     app.run(debug=True)

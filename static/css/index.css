@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-/* Body styling */
 body {
     font-family: Arial, sans-serif;
     color: #333;
@@ -35,11 +34,17 @@ header nav a {
     font-weight: 500;
 }
 
+.cta-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .cta-buttons .btn {
     background-color: #fbbc04;
     color: #333;
     padding: 10px 20px;
-    border-radius: 20px;
+    border-radius: 15px;
     text-decoration: none;
     font-weight: bold;
 }

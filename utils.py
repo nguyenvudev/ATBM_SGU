@@ -1,31 +1,25 @@
-# import PyPDF2
-from Crypto.PublicKey import RSA
+import os
+import base64
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Cipher import AES
-from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-from Crypto.Cipher import AES
-from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
-import base64
-import os
+from Crypto.PublicKey import RSA
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Signature import pkcs1_15
 from typing import Optional
 
-# from pymupdf import Document
-
 def generate_aes_key_from_password(password, salt):
-    # Tạo khóa AES từ mật khẩu người dùng
-    return PBKDF2(password, salt, dkLen=32, count=1000000)
+    return PBKDF2(password, salt, dkLen=32, count=1000000)  # Tạo khóa AES từ mật khẩu người dùng
 
 def encrypt_with_password(password, plaintext):
     salt = get_random_bytes(16)  # Tạo salt ngẫu nhiên
-    key = generate_aes_key_from_password(password, salt)  # Tạo khóa AES từ mật khẩu
+    key = generate_aes_key_from_password(password, salt) # Tạo khóa AES từ mật khẩu
     iv = get_random_bytes(16)  # Tạo IV ngẫu nhiên
     cipher = AES.new(key, AES.MODE_CBC, iv)
     padded_text = plaintext + (16 - len(plaintext) % 16) * chr(16 - len(plaintext) % 16)
     ciphertext = cipher.encrypt(padded_text.encode())
-    # Mã hóa Base64 cho salt, iv, và ciphertext để dễ lưu trữ
-    return base64.b64encode(salt + iv + ciphertext).decode()
+    return base64.b64encode(salt + iv + ciphertext).decode() # Mã hóa Base64 cho salt, iv, và ciphertext để dễ lưu trữ
 
 # Hàm giải mã AES (chế độ CBC) sử dụng mật khẩu người dùng
 def decrypt_with_password(password, encrypted_data):
@@ -54,7 +48,6 @@ def rsa_encrypt(data: str, public_key: bytes) -> str:
     cipher = PKCS1_OAEP.new(public_key)  # Khởi tạo mã hóa RSA sử dụng đệm OAEP
     encrypted_data = cipher.encrypt(data.encode('utf-8'))  # Mã hóa dữ liệu (chuyển sang bytes)
     return base64.b64encode(encrypted_data).decode('utf-8')  # Mã hóa kết quả dưới dạng base64 và chuyển sang chuỗi
-
 
 def rsa_decrypt(encrypted_data: str, private_key: bytes) -> str:
     private_key = RSA.import_key(private_key)  # Chuyển đổi khóa riêng sang đối tượng khóa RSA
@@ -91,7 +84,6 @@ def encrypt_file(file_path: str, public_key: bytes) -> Optional[bytes]:
         print(f"Xảy ra lỗi khi mã hóa: {e}")
         return None
 
-
 def aes_decrypt(encrypted_data: bytes, aes_key: bytes) -> bytes:
     nonce = encrypted_data[:16]  # Trích xuất nonce từ dữ liệu mã hóa
     tag = encrypted_data[16:32]  # Trích xuất thẻ xác thực
@@ -114,43 +106,8 @@ def decrypt_file(encrypted_file_path: str, private_key: bytes) -> Optional[bytes
         print(f"Xảy ra lỗi khi giải mã: {e}")
         return None
 
-
 def create_signature(data: str, private_key: bytes) -> str:
     private_key = RSA.import_key(private_key)
     h = SHA256.new(data.encode('utf-8'))
     signature = pkcs1_15.new(private_key).sign(h)
     return base64.b64encode(signature).decode('utf-8')
-
-
-# def get_pdf_preview(file_path):
-#     try:
-#         with open(file_path, 'rb') as file:
-#             reader = PyPDF2.PdfReader(file)
-#             if len(reader.pages) > 0:
-#                 first_page = reader.pages[0]
-#                 text = first_page.extract_text()
-#                 return text[:100] if text else "Không thể trích xuất văn bản từ trang PDF này."
-#             else:
-#                 return "Tệp PDF không có trang nào."
-#     except Exception as e:
-#         return f"Không thể đọc tệp PDF: {str(e)}"
-#
-# def get_docx_preview(file_path):
-#     try:
-#         doc = Document(file_path)
-#         text = ''
-#         for para in doc.paragraphs:
-#             text += para.text + '\n'
-#         return text[:1000] if text else "Không thể trích xuất văn bản từ tệp Word này."
-#     except Exception as e:
-#         return f"Không thể đọc tệp Word: {str(e)}"
-
-
-
-# def get_text_preview(file_path):
-#     try:
-#         with open(file_path, 'r', encoding='utf-8') as file:
-#             text = file.read()
-#         return text[:1000] if text else "Không thể trích xuất văn bản từ tệp này."
-#     except Exception as e:
-#         return f"Không thể đọc tệp văn bản: {str(e)}"
