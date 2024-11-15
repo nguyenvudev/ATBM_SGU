@@ -10,6 +10,7 @@ class User(db.Model):
     password = db.Column(db.String(128), nullable=False)
     public_key = db.Column(db.String, nullable=False)
     private_key = db.Column(db.String, nullable=False)
+    # backup_email = db.Column(db.String(120), nullable=True)
 
 class EncryptedEmail(db.Model):
     id = db.Column(db.Integer, primary_key=True)

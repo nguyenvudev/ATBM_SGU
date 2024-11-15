@@ -1,246 +1,218 @@
-    ///__________Ẩn hiện các form__________///
-    // ---- Ẩn hiện sidebar ---- //
-    let sidebar = document.querySelector(".sidebar");
-    let closeBtn = document.querySelector("#btn");
+///__________Ẩn hiện các form__________///
+// ---- Ẩn hiện sidebar ---- //
+let sidebar = document.querySelector(".sidebar");
+let closeBtn = document.querySelector("#btn");
 
-    closeBtn.addEventListener("click", () => {
-        sidebar.classList.toggle("open");
-        menuBtnChange();
-    });
+closeBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+    menuBtnChange();
+});
 
-    function menuBtnChange() {
-        if (sidebar.classList.contains("open")) {
-            closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-        } else {
-            closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-        }
+function menuBtnChange() {
+    if (sidebar.classList.contains("open")) {
+        closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+    } else {
+        closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+    }
+}
+
+// ---- Ẩn hiện các form ---- //
+document.addEventListener("DOMContentLoaded", function() {
+    // ---- Const các nút bấm ---- //
+    // Nút sidebar
+    const mailCreateBtn = document.querySelector('.mail-create');
+    const mailReceivedBtn = document.querySelector('.mail-received');
+    const mailSendBtn = document.querySelector('.mail-send');
+    const mailTrashBtn = document.querySelector('.mail-trash');
+
+    // Nút bên home-section
+    const mailProfileBtn = document.querySelector(".profile-details");
+    const mailChangeBtn = document.querySelector(".recover-key");
+
+    const mailRepReceivedBtn = document.querySelector('.btn-rep-email-received');
+    const mailForwardReceivedBtn = document.querySelector('.btn-forward-email-received');
+
+    const mailRepSentBtn = document.querySelector('.btn-rep-email-sent');
+    const mailForwardSentBtn = document.querySelector('.btn-forward-email-sent');
+
+    // Nút tắt
+    const closeChangePassword = document.getElementById('close-change');
+    const closeFormCreateMail = document.getElementById('close-compose');
+    const closeFormSeenMail = document.getElementById('close-form-seen');
+    const closeButton = document.getElementById('closeFormDecode');
+
+    // Trả lời
+    const closeRepSentMail = document.getElementById('close-rep-seen');
+    const closeRepReceived = document.getElementById('close-rep-received');
+
+    // ---- Const các form ---- //
+    // Form sidebar
+    const formMailCreate = document.querySelector('.form-create-mail');
+    const formMailReceived = document.querySelector('.form-mail-received');
+    const formMailSend = document.querySelector('.form-mail-send');
+    const formMailTrash = document.querySelector('.form-trash-mail');
+
+    // Form bên home-section
+    const formProfile = document.querySelector('.form-account');
+    const formRecoverKey = document.querySelector('.form-recover-key');
+    const formSeenMail = document.getElementById('formSeen');
+    const formDecode = document.getElementById('formDecode');
+
+    const formRepSentMail = document.getElementById('form-rep-sent');
+    const formRepReceivedMail = document.getElementById('form-rep-received');
+
+    let isFormRecover = false;
+    let isFormVisible = false;
+
+    // Mặc định hiển thị form thư đến
+    formMailReceived.classList.add('active');
+
+    // Reset form trước khi chuyển đổi form khác
+    function resetForms() {
+        formMailReceived.classList.remove('active');
+        formMailSend.classList.remove('active');
+        formMailTrash.classList.remove('active');
     }
 
-    // ---- Ẩn hiện các form ---- //
-    document.addEventListener("DOMContentLoaded", function() {
-        // ---- Const các nút bấm ---- //
-        // Nút sidebar
-        const mailCreateBtn = document.querySelector('.mail-create');
-        const mailReceivedBtn = document.querySelector('.mail-received');
-        const mailSendBtn = document.querySelector('.mail-send');
-        const mailTrashBtn = document.querySelector('.mail-trash');
-
-        // Nút bên home-section
-        const mailProfileBtn = document.querySelector(".profile-details");
-        const mailChangeBtn = document.querySelector(".recover-key");
-        //const mailSeenBtn = document.querySelector('.btn-show-details');
-        const mailRepBtn = document.querySelector('.btn-rep-email');
-        const mailForwardBtn = document.querySelector('.btn-forward-email');
-
-//        test thư gửi
-//        const mailRepBtnSend = document.querySelector('.btn-rep-email_send');
-//        const mailForwardBtnSend = document.querySelector('.btn-forward-email_send');
-
-        // Nút tắt
-        const closeChangePassword = document.getElementById('close-change');
-        const closeFormCreateMail = document.getElementById('close-compose');
-        const closeFormSeenMail = document.getElementById('close-form-seen');
-        const closeButton = document.getElementById('closeFormDecode');
-
-        // ---- Const các form ---- //
-        // Form sidebar
-        const formMailCreate = document.querySelector('.form-create-mail');
-        const formMailReceived = document.querySelector('.form-mail-received');
-        const formMailSend = document.querySelector('.form-mail-send');
-        const formMailTrash = document.querySelector('.form-trash-mail');
-
-        // Form bên home-section
-        const formProfile = document.querySelector('.form-account');
-        const formRecoverKey = document.querySelector('.form-recover-key');
-        const formSeenMail = document.getElementById('formSeen');
-        const formDecode = document.getElementById('formDecode');
-
-        let isFormRecover = false;
-        let isFormVisible = false;
-
-        // Mặc định hiển thị form thư đến
+    // Mở form thư đến
+    mailReceivedBtn.addEventListener('click', function() {
+        hideFormDecode();
+        hideFormSeen();
+        resetForms();
         formMailReceived.classList.add('active');
+    });
 
-        // Reset form trước khi chuyển đổi form khác
-        function resetForms() {
-            formMailReceived.classList.remove('active');
-            formMailSend.classList.remove('active');
-            formMailTrash.classList.remove('active');
-        }
+    // Mở form thư đã gửi
+    mailSendBtn.addEventListener('click', function() {
+        hideFormDecode();
+        hideFormSeen();
+        resetForms();
+        formMailSend.classList.add('active');
+    });
 
-        // ----- Mở form liên kết với nút bên sidebar ----- //
-        // Mở form thư đến
-        mailReceivedBtn.addEventListener('click', function() {
-            hideFormDecode();
-            hideFormSeen();
-            resetForms();
-            formMailReceived.classList.add('active');
-        });
+    // Mở form thùng rác
+    mailTrashBtn.addEventListener('click', function(){
+        hideFormDecode();
+        hideFormSeen();
+        resetForms();
+        formMailTrash.classList.add('active');
+    });
 
-        // Mở form thư đã gửi
-        mailSendBtn.addEventListener('click', function() {
-            hideFormDecode();
-            hideFormSeen();
-            resetForms();
-            formMailSend.classList.add('active');
-        });
+    // Mở form soạn thư
+    mailCreateBtn?.addEventListener('click', function() {
+        formMailCreate.classList.toggle('active');
+    });
 
-        // Mở form thùng rác
-        mailTrashBtn.addEventListener('click', function(){
-            hideFormDecode();
-            hideFormSeen();
-            resetForms();
-            formMailTrash.classList.add('active');
-        });
+    function closeCreateMail() {
+        formMailCreate.classList.remove('active');
+        document.getElementById('recipient').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('main').innerText = '';
+    }
+    closeFormCreateMail?.addEventListener('click', closeCreateMail);
 
-        // Mở form soạn thư
-        mailCreateBtn?.addEventListener('click', function() {
-            formMailCreate.classList.toggle('active');
-        });
-
-        // ----- Mở form bên home-section ----- //
-        // Mở form thông tin tài khoản
-        mailProfileBtn?.addEventListener("click", function() {
-             formProfile.classList.toggle('active');
-        });
-        // Mở và đóng form đổi mật khẩu
-        mailChangeBtn?.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (!isFormRecover) {
-                formRecoverKey.style.opacity = 1;
-                formRecoverKey.style.visibility = "visible";
-                formRecoverKey.style.transform = "scale(1)";
-                isFormRecover = true;
-            } else {
-                formRecoverKey.style.opacity = 0;
-                formRecoverKey.style.visibility = "hidden";
-                formRecoverKey.style.transform = "scale(0)";
-                isFormRecover = false;
-            }
-        });
-
-        function closeFormRecoverKey() {
-            formRecoverKey.classList.remove('active');
+    // ----- Mở form bên home-section ----- //
+    // Mở form thông tin tài khoản
+    mailProfileBtn?.addEventListener("click", function() {
+            formProfile.classList.toggle('active');
+    });
+    // Mở và đóng form đổi mật khẩu
+    mailChangeBtn?.addEventListener("click", function(e) {
+        e.preventDefault();
+        if (!isFormRecover) {
+            formRecoverKey.style.opacity = 1;
+            formRecoverKey.style.visibility = "visible";
+            formRecoverKey.style.transform = "scale(1)";
+            isFormRecover = true;
+        } else {
             formRecoverKey.style.opacity = 0;
             formRecoverKey.style.visibility = "hidden";
             formRecoverKey.style.transform = "scale(0)";
             isFormRecover = false;
         }
-        closeChangePassword?.addEventListener('click', closeFormRecoverKey);
+    });
 
-        // Mở và đóng thư đến để đọc
-        function hideFormDecode() {
-            if (formDecode) {
-                formDecode.classList.remove('active');
-            }
+    function closeFormRecoverKey() {
+        formRecoverKey.classList.remove('active');
+        formRecoverKey.style.opacity = 0;
+        formRecoverKey.style.visibility = "hidden";
+        formRecoverKey.style.transform = "scale(0)";
+        isFormRecover = false;
+    }
+    closeChangePassword?.addEventListener('click', closeFormRecoverKey);
+
+    // ----- Lấy thông tin cho formDecode ----- //
+    function hideFormDecode() {
+        if (formDecode) {
+            formRepReceivedMail.classList.remove('active');
+            formDecode.classList.remove('active');
         }
+    }
 
-        function showFormDecode() {
-            if (formDecode) {
-                formDecode.classList.add('active');
-            }
+    function showFormDecode() {
+        if (formDecode) {
+            formDecode.classList.add('active');
         }
+    }
+    document.querySelectorAll('.btn-show-decode').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            event.preventDefault();
 
-        // Mở và đóng trả lời thư trong hộp thư đến
-        mailRepBtn?.addEventListener('click', function() {
-            formMailCreate.classList.add('active');
-            document.getElementById('recipient').value = document.getElementById('senderEmail').innerText;
-            document.getElementById('subject').value = '';
-            document.getElementById('main').innerText = '';
-        });
+            const url = this.href;
+            const emailRow = this.closest('.email-row');
 
-        mailForwardBtn?.addEventListener('click', function() {
-            formMailCreate.classList.add('active');
-            document.getElementById('recipient').value = '';
-            document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectEmail').innerText;
-            document.getElementById('main').innerText =  document.getElementById('decryptedBody').innerText;
-        });
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('senderEmail').innerText = data.sender_email;
+                    document.getElementById('subjectEmail').innerText = data.subject;
+                    const timestamp = new Date(data.timestamp);
+                    document.getElementById('timeEmailReceived').innerText = timestamp.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+     
+                if (data.decrypted_body) {
+                    // Sử dụng innerText để tránh việc hiển thị các thẻ HTML
+                    let decryptedBody = data.decrypted_body; // Chuyển đổi các ký tự xuống dòng thành thẻ <br>
+                    decryptedBody = decryptedBody.replace(/\n/g, '<br>');
+                    document.getElementById('decryptedBody').innerHTML = decryptedBody;
+                    document.getElementById('bodyContent').style.display = 'block';
+                    document.getElementById('noDecryptedBody').style.display = 'none';
+                } else {
+                    document.getElementById('bodyContent').style.display = 'none';
+                    document.getElementById('noDecryptedBody').style.display = 'block';
+                }
 
-        function closeCreateMail() {
-            formMailCreate.classList.remove('active');
-            document.getElementById('recipient').value = '';
-            document.getElementById('subject').value = '';
-            document.getElementById('main').innerText = '';
-        }
-        closeFormCreateMail?.addEventListener('click', closeCreateMail);
-
-        // Mở và đóng trả lời thư trong thư đã gửi
-//        mailRepBtnSend?.addEventListener('click', function() {
-//            formMailCreate.classList.add('active');
-//            document.getElementById('recipient').value = document.getElementById('receiverEmail').innerText;
-//            document.getElementById('subject').value = '';
-//            document.getElementById('main').innerText = '';
-//        });
-//
-//        mailForwardBtnSend?.addEventListener('click', function() {
-//            formMailCreate.classList.add('active');
-//            document.getElementById('recipient').value = '';
-//            document.getElementById('subject').value = 'Re: ' + document.getElementById('subjectSeen').innerText;
-//            document.getElementById('main').innerText =  document.getElementById('decryptedBodySeen').innerText;
-//        });
-
-
-        // ----- Lấy thông tin cho formDecode ----- //
-        document.querySelectorAll('.btn-show-decode').forEach(btn => {
-            btn.addEventListener('click', function(event) {
-                event.preventDefault();
-
-                const url = this.href;
-                const emailRow = this.closest('.email-row');
-
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('senderEmail').innerText = data.sender_email;
-                        document.getElementById('subjectEmail').innerText = data.subject;
-
-                    if (data.decrypted_body) {
-                        // Sử dụng innerText để tránh việc hiển thị các thẻ HTML
-                        let decryptedBody = data.decrypted_body; // Chuyển đổi các ký tự xuống dòng thành thẻ <br>
-                        decryptedBody = decryptedBody.replace(/\n/g, '<br>');
-                        document.getElementById('decryptedBody').innerHTML = decryptedBody;
-
-                            document.getElementById('bodyContent').style.display = 'block';
-                            document.getElementById('noDecryptedBody').style.display = 'none';
-                        } else {
-                            document.getElementById('bodyContent').style.display = 'none';
-                            document.getElementById('noDecryptedBody').style.display = 'block';
-                        }
-
-
-                        if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
-                            let attachmentsHTML = '';
-                            data.decrypted_attachments.forEach(attachment => {
-                                const fileIcon = getIconByFileExtension(attachment.filename);
-                                attachmentsHTML += `
-                                    <div class="merge-file">
-                                        <div class="form-file">
-                                            <div class="line">
-                                                ${fileIcon.icon} <!-- Icon lớn cho loại tệp -->
-                                            </div>
-                                            <a href="${attachment.path}" download>
-                                                <span class="icon-small">${fileIcon.icon}</span> <!-- Icon nhỏ cạnh tên tệp -->
-                                                ${attachment.filename}
-                                            </a>
-                                            <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
-                                        </div>
+                if (data.decrypted_attachments && data.decrypted_attachments.length > 0) {
+                    let attachmentsHTML = '';
+                    data.decrypted_attachments.forEach(attachment => {
+                        const fileIcon = getIconByFileExtension(attachment.filename);
+                        attachmentsHTML += `
+                            <div class="merge-file">
+                                <div class="form-file">
+                                    <div class="line">
+                                        ${fileIcon.icon} <!-- Icon lớn cho loại tệp -->
                                     </div>
-                                `;
-                            });
+                                    <a href="${attachment.path}" download>
+                                        <span class="icon-small">${fileIcon.icon}</span> <!-- Icon nhỏ cạnh tên tệp -->
+                                        ${attachment.filename}
+                                    </a>
+                                    <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
+                    document.getElementById('attachmentsContent').style.display = 'block';
+                    document.getElementById('noAttachmentsContent').style.display = 'none';
+                } else {
+                    document.getElementById('attachmentsContent').style.display = 'none';
+                    document.getElementById('noAttachmentsContent').style.display = 'block';
+                }
 
-                            document.getElementById('attachmentsList').innerHTML = attachmentsHTML;
-                            document.getElementById('attachmentsContent').style.display = 'block';
-                            document.getElementById('noAttachmentsContent').style.display = 'none';
-                        } else {
-                            document.getElementById('attachmentsContent').style.display = 'none';
-                            document.getElementById('noAttachmentsContent').style.display = 'block';
-                        }
+                    if (closeButton) {
+                        closeButton.addEventListener('click', hideFormDecode);
+                    }
 
-                        if (closeButton) {
-                            closeButton.addEventListener('click', hideFormDecode);
-                        }
-
-                        showFormDecode();
+                    showFormDecode();
 
                     function getIconByFileExtension(filename) {
                         const ext = filename.split('.').pop().toLowerCase();
@@ -259,18 +231,52 @@
                                 return { icon: '<i class="bx bxs-file icon-file"></i>', color: 'black' };
                         }
                     }
-
-
-                    emailRow.classList.remove('unread');
-                    emailRow.classList.add('read');
+                emailRow.classList.remove('unread');
+                emailRow.classList.add('read');
                 })
-                .catch(error => console.error('Error fetching data:', error));
+            .catch(error => console.error('Error fetching data:', error));
         });
     });
 
-    // Đọc thư đã gửi
+    // Mở form trả lời thư
+    mailRepReceivedBtn?.addEventListener('click', function () {
+        formRepReceivedMail.classList.toggle('active');
+        document.getElementById('title-received').innerHTML = 'Trả lời thư';
+        document.getElementById('recipient-received').value = document.getElementById('senderEmail').innerText;
+        document.getElementById('subject-received').value = 'Rep: ';
+        document.getElementById('main-received').innerText = 
+            '\n\n\n\n' +
+            'Vào lúc: ' + document.getElementById('timeEmailReceived').innerText + 
+            ' < ' + document.getElementById('senderEmail').innerText + ' > đã viết:' + '\n\n' +
+            document.getElementById('decryptedBody').innerText;
+    })
+
+    // Mở form chuyển tiếp
+    mailForwardReceivedBtn?.addEventListener('click', function () {
+        formRepReceivedMail.classList.toggle('active');  
+        document.getElementById('title-received').innerHTML = 'Chuyển tiếp thư';
+        document.getElementById('recipient-received').value = '';
+        document.getElementById('subject-received').value = 'Forward: ';
+        document.getElementById('main-received').innerText = 
+            '\n\n\n\n' +
+            '----Forwarded message----' + '\n' +
+            'Từ: < ' + document.getElementById('senderEmail').innerText + ' >' + '\n' +
+            'Thời gian: ' + document.getElementById('timeEmailReceived').innerText + '\n' +
+            'Tiêu đề: ' + document.getElementById('subjectEmail').innerText + '\n' + 
+            'Với nội dung sau:' + '\n\n' +
+            document.getElementById('decryptedBody').innerText; 
+    }) 
+
+    // Đóng form trả lời thư
+    closeRepReceived?.addEventListener('click', function () {
+        formRepReceivedMail.classList.remove('active');
+    });
+
+
+     // ----- Lấy thông tin cho formSentMail ----- //
     function hideFormSeen() {
         if (formSeenMail) {
+            formRepSentMail.classList.remove('active');
             formSeenMail.classList.remove('active');
         }
     }
@@ -290,6 +296,8 @@
                     document.getElementById('receiverEmail').innerText = data.receiver_email;
                     document.getElementById('sendEmail').innerText = data.send_email;
                     document.getElementById('subjectSeen').innerText = data.subject;
+                    const timestamp = new Date(data.timestamp);
+                    document.getElementById('timeEmailSent').innerText = timestamp.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
 
                     if (data.decrypted_body_send) {
                         let decrypted_Body_send = data.decrypted_body_send.replace(/\n/g, '<br>');
@@ -345,22 +353,74 @@
                         }
                     }
                 })
-                .catch(error => console.error('Error fetching data:', error));
+            .catch(error => console.error('Error fetching data:', error));
         });
     });
 
+    // Mở form trả lời thư
+    mailRepSentBtn?.addEventListener('click', function () {
+        formRepSentMail.classList.toggle('active');
+        document.getElementById('title-sent').innerHTML = 'Trả lời thư';
+        document.getElementById('recipient-sent').value = document.getElementById('receiverEmail').innerText;
+        document.getElementById('subject-sent').value = 'Rep: ';
+        document.getElementById('main-sent').innerText = 
+            '\n\n\n\n' +
+            'Vào lúc: ' + document.getElementById('timeEmailSent').innerText + 
+            ' < ' + document.getElementById('receiverEmail').innerText + ' > đã viết:' + '\n\n' +
+            document.getElementById('decryptedBodySeen').innerText;
+    })
+
+    // Mở form chuyển tiếp
+    mailForwardSentBtn?.addEventListener('click', function () {
+        formRepSentMail.classList.toggle('active');
+        document.getElementById('title-sent').innerHTML = 'Chuyển tiếp thư';
+        document.getElementById('recipient-sent').value = '';
+        document.getElementById('subject-sent').value = 'Forward: ';
+        document.getElementById('main-sent').innerText = 
+            '\n\n\n\n' +
+            '----Forwarded message----' + '\n' +
+            'Từ: < ' + document.getElementById('sendEmail').innerText + ' >' + '\n' +
+            'Thời gian: ' + document.getElementById('timeEmailSent').innerText + '\n' +
+            'Tiêu đề: ' + document.getElementById('subjectSeen').innerText + '\n' +
+            'Đến: < ' + document.getElementById('receiverEmail').innerText + ' >' + '\n\n' + 
+            document.getElementById('decryptedBodySeen').innerText;   
+    }) 
+
+    // Đóng form trả lời thư
+    closeRepSentMail?.addEventListener('click', function () {
+        formRepSentMail.classList.remove('active');
+    });
+    
     // ----- Đóng form khi click ngoài form ----- //
     document.addEventListener('click', function(event) {
-        //if (!formMailCreate.contains(event.target) && !event.target.closest('.mail-create')) {
-        //    closeCreateMail();
-        //}
         if (!formRecoverKey.contains(event.target) && !event.target.closest('.recover-key')) {
             closeFormRecoverKey();
         }
-        //if (formSeenMail && !formSeenMail.contains(event.target) && !event.target.closest('.btn-show-details')) {
-        //    hideFormSeen();
-        //}
     });
+
+    // Hàm chung để điều chỉnh vị trí formRep theo form cha
+    function setPositionAtBottom(form, parentForm) { 
+        const clientHeight = parentForm.clientHeight;  
+        const scrollTop = parentForm.scrollTop; 
+        
+        form.style.top = `${scrollTop + clientHeight - form.offsetHeight}px`;
+    }
+
+    if (formDecode && formRepReceivedMail) {
+        formDecode.addEventListener('scroll', function () {
+            setPositionAtBottom(formRepReceivedMail, formDecode);
+        });
+
+        setPositionAtBottom(formRepReceivedMail, formDecode);
+    }
+
+    if (formSeenMail && formRepSentMail) {
+        formSeenMail.addEventListener('scroll', function () {
+            setPositionAtBottom(formRepSentMail, formSeenMail);
+        });
+
+        setPositionAtBottom(formRepSentMail, formSeenMail);
+    }
 });
 
 ///_____________________Ẩn hiện nút Delete_____________________///
@@ -399,9 +459,9 @@ toggleDeleteIconSend();
 
 // ---- Nút Delete của form thùng rác ---- //
 function toggleDeleteIconTrash() {
-   let checkboxesChecked = document.querySelectorAll('.email-checkbox-trash:checked').length > 0;
-   let deleteIcon = document.getElementById('delete-icon-3');
-   deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
+    let checkboxesChecked = document.querySelectorAll('.email-checkbox-trash:checked').length > 0;
+    let deleteIcon = document.getElementById('delete-icon-3');
+    deleteIcon.style.display = checkboxesChecked ? 'block' : 'none';
 }
 
 document.getElementById('select-all-trash').addEventListener('change', function(event) {
@@ -413,8 +473,56 @@ document.getElementById('select-all-trash').addEventListener('change', function(
 document.querySelectorAll('.email-checkbox-trash').forEach(checkbox => {
     checkbox.addEventListener('change', toggleDeleteIconTrash);
 });
-
 toggleDeleteIconTrash();
+
+document.getElementById('delete-icon-3').addEventListener('click', function() {
+    let selectedEmails = document.querySelectorAll('.email-checkbox-trash:checked');
+    let emailIds = [];
+
+    selectedEmails.forEach(checkbox => {
+        let emailRow = checkbox.closest('tr');
+        if (emailRow) {
+            emailIds.push(emailRow.dataset.emailId);
+            emailRow.style.display = 'none';
+        }
+    });
+
+    // Gửi yêu cầu xóa tới máy chủ
+    fetch('/delete_emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ emailIds: emailIds })
+    }).then(response => response.json())
+      .then(data => {
+          console.log('Emails deleted:', data);
+      }).catch(error => console.error('Error deleting emails:', error));
+});
+
+document.getElementById('delete-now').addEventListener('click', function() {
+    // Xác nhận hành động xóa tất cả thư trong thùng rác
+    if (confirm('Bạn có chắc chắn muốn xóa tất cả thư trong thùng rác không?')) {
+        // Gửi yêu cầu xóa tất cả thư trong thùng rác
+        fetch('/delete_all_trash', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Tất cả thư trong thùng rác đã được xóa thành công!');
+                  location.reload(); // Tải lại trang để cập nhật trạng thái
+              } else {
+                  alert('Có lỗi xảy ra khi xóa tất cả thư. Vui lòng thử lại.');
+              }
+          }).catch(error => {
+              console.error('Error deleting all emails:', error);
+              alert('Có lỗi xảy ra khi xóa tất cả thư. Vui lòng thử lại.');
+          });
+    }
+});
 
 // ---- Chuyển đến thùng rác ---- //
 function moveToTrash(folderType) {
@@ -485,188 +593,202 @@ function updateTrashEmails() {
         .catch(error => console.error('Error fetching trash emails:', error));
 }
 
-
-
-    ///__________Thông báo của việc thực hiện gửi maill__________///
-    document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(function() {
-            const alertBox = document.querySelector(".alert");
-            if (alertBox) {
-                alertBox.style.display = "none";
-            }
-        }, 4000);
-    });
-
-    ///__________Phân trang danh sách thư của các form__________///
-    document.addEventListener('DOMContentLoaded', function() {
-        const rowsPerPage = 13;
-
-        function paginateTable(table) {
-            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-            const paginationControls = table.nextElementSibling;
-            let currentPage = 1;
-
-            function displayRows() {
-                const startRow = (currentPage - 1) * rowsPerPage;
-                const endRow = startRow + rowsPerPage;
-                for (let i = 0; i < rows.length; i++) {
-                    rows[i].style.display = i >= startRow && i < endRow ? '' : 'none';
-                }
-            }
-
-            function setupPagination() {
-                const pageCount = Math.ceil(rows.length / rowsPerPage);
-                paginationControls.innerHTML = '';
-
-                for (let i = 1; i <= pageCount; i++) {
-                    const pageButton = document.createElement('button');
-                    pageButton.textContent = i;
-                    pageButton.classList.add('page-button');
-                    pageButton.addEventListener('click', function() {
-                        currentPage = i;
-                        displayRows();
-                        highlightCurrentPage();
-                    });
-                    paginationControls.appendChild(pageButton);
-                }
-            }
-
-            function highlightCurrentPage() {
-                const buttons = paginationControls.getElementsByClassName('page-button');
-                for (let button of buttons) {
-                    button.style.backgroundColor = button.textContent == currentPage ? '#007BFF' : '#f5f5f5';
-                    button.style.color = button.textContent == currentPage ? '#FFF' : '#000';
-                }
-            }
-
-            displayRows();
-            setupPagination();
-            highlightCurrentPage();
+///__________Thông báo của việc thực hiện gửi maill__________///
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            alertBox.style.display = "none";
         }
-
-        // Lặp qua tất cả các bảng email-table để phân trang
-        document.querySelectorAll('.email-table').forEach(table => {
-            paginateTable(table);
-        });
-    });
-
-    ///__________Các chỉnh sửa cho phần soạn thư__________///
-    // ----- Cập nhật nội dung vào div ----- //
-    function updateBody() {
-        document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
-    }
-
-    // ----- Cập nhật nội dung không bị lỗi div/br ----- //
-    document.addEventListener("DOMContentLoaded", function() {
-        const mainDiv = document.getElementById('main');
-
-        // Thiết lập sự kiện input để xử lý mỗi khi người dùng nhập liệu
-        mainDiv.addEventListener('input', function(event) {
-            // Có thể điều chỉnh các thuộc tính hoặc xử lý nội dung tại đây nếu cần
-        });
-
-        // Đặt focus vào phần tử khi người dùng click vào nó
-        mainDiv.addEventListener('click', function(event) {
-            mainDiv.focus();
-        });
-
-        // Thiết lập các thuộc tính khi phần tử được focus
-        mainDiv.addEventListener('focus', function(event) {
-            mainDiv.style.outline = 'none'; // Loại bỏ viền mặc định khi focus
-        });
-
-        // Mẫu nội dung ban đầu
-        const content = "";
-        mainDiv.innerHTML = content.replace(/\n/g, '<br/>');
-    });
-
-    // ----- Gửi nhiều file và chuyển thành dropdown ----- //
-    let selectedFiles = [];
-
-document.getElementById('attachment').addEventListener('change', function() {
-    const newFiles = Array.from(this.files);
-
-    // Add new files to selectedFiles if not already present
-    newFiles.forEach(file => {
-        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-            selectedFiles.push(file);
-        }
-    });
-
-    // Update the files property to reflect the selected files
-    const dataTransfer = new DataTransfer();
-    selectedFiles.forEach(file => dataTransfer.items.add(file));
-    this.files = dataTransfer.files;
-
-    updateFileDropdown();
+    }, 4000);
 });
 
-function updateFileDropdown() {
-    const fileDropdownContainer = document.getElementById('file-dropdown-container');
-    fileDropdownContainer.innerHTML = '';
+///__________Phân trang danh sách thư của các form__________///
+document.addEventListener('DOMContentLoaded', function() {
+    const rowsPerPage = 13;
 
-    const select = document.createElement('select');
-    select.className = 'file-dropdown';
+    function paginateTable(table) {
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const paginationControls = table.nextElementSibling;
+        let currentPage = 1;
 
-    // Populate the dropdown with selected files
-    selectedFiles.forEach(file => {
-        const option = document.createElement('option');
-        option.value = file.name;
-        option.text = file.name;
-        select.appendChild(option);
+        function displayRows() {
+            const startRow = (currentPage - 1) * rowsPerPage;
+            const endRow = startRow + rowsPerPage;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = i >= startRow && i < endRow ? '' : 'none';
+            }
+        }
+
+        function setupPagination() {
+            const pageCount = Math.ceil(rows.length / rowsPerPage);
+            paginationControls.innerHTML = '';
+
+            for (let i = 1; i <= pageCount; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-button');
+                pageButton.addEventListener('click', function() {
+                    currentPage = i;
+                    displayRows();
+                    highlightCurrentPage();
+                });
+                paginationControls.appendChild(pageButton);
+            }
+        }
+
+        function highlightCurrentPage() {
+            const buttons = paginationControls.getElementsByClassName('page-button');
+            for (let button of buttons) {
+                button.style.backgroundColor = button.textContent == currentPage ? '#007BFF' : '#f5f5f5';
+                button.style.color = button.textContent == currentPage ? '#FFF' : '#000';
+            }
+        }
+
+        displayRows();
+        setupPagination();
+        highlightCurrentPage();
+    }
+
+    // Lặp qua tất cả các bảng email-table để phân trang
+    document.querySelectorAll('.email-table').forEach(table => {
+        paginateTable(table);
     });
+});
 
-    fileDropdownContainer.appendChild(select);
+///__________Các chỉnh sửa cho phần soạn thư__________///
+// ----- Cập nhật nội dung vào div ----- //
+function updateBody() {
+    document.getElementById('hidden-body').value = document.getElementById('main').innerHTML;
+    document.getElementById('hidden-body-sent').value = document.getElementById('main-sent').innerHTML;
+    document.getElementById('hidden-body-received').value = document.getElementById('main-received').innerHTML;
 
-    // Add a Delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.innerText = 'Delete';
-    deleteButton.className = 'delete-button';
-    fileDropdownContainer.appendChild(deleteButton);
-
-    // Event listener for the Delete button
-    deleteButton.addEventListener('click', function() {
-        const selectedFileName = select.value;
-        selectedFiles = selectedFiles.filter(file => file.name !== selectedFileName);
-
-        // Update the files property to remove the selected file
-        const dataTransfer = new DataTransfer();
-        selectedFiles.forEach(file => dataTransfer.items.add(file));
-        document.getElementById('attachment').files = dataTransfer.files;
-
-        // Update the dropdown
-        updateFileDropdown();
-    });
 }
 
+// ----- Cập nhật nội dung không bị lỗi div/br ----- //
+document.addEventListener("DOMContentLoaded", function() {
+    const mainDiv = document.getElementById('main');
 
-    ///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
-    document.getElementById('send-email-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const formData = new FormData(this);
-        fetch("{{ url_for('send_email') }}", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.status === 'success') {
-                updateSentEmails();
-            }
-        })
-        .catch(error => console.error('Error:', error));
+    // Thiết lập sự kiện input để xử lý mỗi khi người dùng nhập liệu
+    mainDiv.addEventListener('input', function(event) {
+        // Có thể điều chỉnh các thuộc tính hoặc xử lý nội dung tại đây nếu cần
     });
 
-    function updateSentEmails() {
-        fetch("{{ url_for('inbox') }}")
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTbody = doc.getElementById('sent-emails-tbody');
-            document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
-        })
-        .catch(error => console.error('Error:', error));
+    // Đặt focus vào phần tử khi người dùng click vào nó
+    mainDiv.addEventListener('click', function(event) {
+        mainDiv.focus();
+    });
+
+    // Thiết lập các thuộc tính khi phần tử được focus
+    mainDiv.addEventListener('focus', function(event) {
+        mainDiv.style.outline = 'none'; // Loại bỏ viền mặc định khi focus
+    });
+
+    // Mẫu nội dung ban đầu
+    const content = "";
+    mainDiv.innerHTML = content.replace(/\n/g, '<br/>');
+});
+
+// ----- Gửi nhiều file và chuyển thành dropdown ----- //
+function handleFileSelection(inputId, containerId) {
+    let selectedFiles = [];
+
+    document.getElementById(inputId).addEventListener('change', function () {
+        const newFiles = Array.from(this.files);
+
+        // Add new files to the list if not already added
+        newFiles.forEach(file => {
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
+            }
+        });
+
+        updateFileList(containerId);
+    });
+
+    // Update the file list displayed in the container
+    function updateFileList(containerId) {
+        const fileListContainer = document.getElementById(containerId);
+        fileListContainer.innerHTML = ''; // Clear previous list
+
+        selectedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+
+            const fileName = document.createElement('span');
+            fileName.className = 'file-name';
+            fileName.textContent = file.name;
+
+            const fileSize = document.createElement('span');
+            fileSize.className = 'file-size';
+            fileSize.textContent = `(${(file.size / 1024).toFixed(1)} KB)`; // Convert size to KB
+
+            const deleteButton = document.createElement('span');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'X';
+
+            // Remove file when clicking the "X" button
+            deleteButton.addEventListener('click', function () {
+                selectedFiles.splice(index, 1);
+                updateFileList(containerId);
+                updateInputFiles(inputId);
+            });
+
+            fileItem.appendChild(fileName);
+            fileItem.appendChild(fileSize);
+            fileItem.appendChild(deleteButton);
+            fileListContainer.appendChild(fileItem);
+        });
     }
+
+    // Update the input file field with selected files
+    function updateInputFiles(inputId) {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        document.getElementById(inputId).files = dataTransfer.files;
+    }
+}
+
+// Initialize when the page loads
+document.addEventListener('DOMContentLoaded', function () {
+    handleFileSelection('attachment-sent', 'file-list-container');
+});
+
+
+
+// Sử dụng hàm cho từng form riêng biệt
+handleFileSelection('attachment-create', 'file-dropdown-create');
+handleFileSelection('attachment-sent', 'file-dropdown-sent');
+handleFileSelection('attachment-received', 'file-dropdown-received');
+
+
+///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
+document.getElementById('send-email-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    fetch("{{ url_for('send_email') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            updateSentEmails();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function updateSentEmails() {
+    fetch("{{ url_for('inbox') }}")
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newTbody = doc.getElementById('sent-emails-tbody');
+        document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
+    })
+    .catch(error => console.error('Error:', error));
+}
