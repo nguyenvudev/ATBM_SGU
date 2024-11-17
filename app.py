@@ -1,20 +1,25 @@
-from datetime import datetime, timedelta
+import os
 import json
-from os.path import basename
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+import pytz
+import base64
 import pdfplumber
+
+from os.path import basename
+from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from twilio.rest import oauth
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import send_file
-import os
+
+from sqlalchemy.exc import IntegrityError
+
 from models import db, User, EncryptedEmail, EncryptForward
-from flask import redirect, url_for, session, render_template
-import pytz
-from flask import jsonify, request
-from bs4 import BeautifulSoup
+from werkzeug.security import generate_password_hash, check_password_hash
 from utils import (
     generate_keys,
     serialize_keys,
@@ -28,37 +33,162 @@ from utils import (
     encrypt_with_password,
     decrypt_with_password
 )
-import os
-from sqlalchemy.exc import IntegrityError
-import base64
 
+
+from flask_mail import Mail, Message
+import os
+import random
+import string
+
+# Khởi tạo ứng dụng Flask
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///email_encryption.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)
 app.secret_key = os.urandom(24)
+
+# Cấu hình SMTP email (Gmail)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'ikon1605@gmail.com'  # Email của bạn
+app.config['MAIL_PASSWORD'] = 'iyyo oxhg cnji epfm'  # Mật khẩu email của bạn
+
+mail = Mail(app)
 db.init_app(app)
 
+# Hàm tạo mã token ngẫu nhiên
+def generate_token(length=6):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
+from email.header import Header
+import smtplib
+
+def send_reset_email(user_email, token):
+    msg = MIMEMultipart()
+
+    # Đặt người gửi với mã hóa UTF-8
+    sender_name = Header('Tên Người Gửi', 'utf-8').encode()
+    msg['From'] = formataddr((sender_name, app.config['MAIL_USERNAME']))
+    msg['To'] = user_email
+
+    # Đặt tiêu đề với mã hóa UTF-8
+    subject = Header("Mã xác nhận khôi phục mật khẩu", 'utf-8').encode()
+    msg['Subject'] = subject
+
+    # Nội dung email (sử dụng UTF-8)
+    body = f"Mã xác nhận để khôi phục mật khẩu của bạn là: {token}"
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+    # Gửi email
+    try:
+        with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
+            server.ehlo()  # Bắt đầu giao thức giao tiếp với máy chủ
+            server.starttls()  # Bảo mật kết nối
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+
+            # Chuyển đổi `msg` thành chuỗi và đảm bảo mã hóa UTF-8
+            server.sendmail(app.config['MAIL_USERNAME'], user_email, msg.as_string().encode('utf-8'))
+            print(f"Đã gửi mã xác nhận đến {user_email}")
+    except Exception as e:
+        print(f"Lỗi khi gửi email: {e}")
+
+
+# Danh sách các tên miền email được phép
+ALLOWED_DOMAINS = ['ATBM.com', 'ATBM.org']
 
 with app.app_context():
     db.create_all()
 
-
-
+# Trang chủ
 @app.route('/')
 def index():
     if 'user_id' in session:
         return redirect(url_for('inbox'))
     return render_template('index.html')
 
+# Chức năng quên mật khẩu
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email_backup']
+        user = User.query.filter_by(backup_email = email).first()
+
+
+        print(user.backup_email)
+        if user and user.backup_email:
+        # Kiểm tra xem người dùng có email dự phòng không
+            # Tạo token và gửi email
+            token = generate_token()
+            session['reset_token'] = token
+            session['reset_email'] = email
+            send_reset_email(email, token)  # Gửi email đến email dự phòng
+            return jsonify(success=True, message="Mã xác nhận đã được gửi đến email dự phòng của bạn.")
+        else:
+            return jsonify(success=False, message="Email không hợp lệ hoặc không có email dự phòng.")
+
+    return render_template('forgot_password.html')
+
+# Chức năng thay đổi mật khẩu
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        token = request.form['token']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Kiểm tra token và email trong session
+        if 'reset_token' in session and 'reset_email' in session:
+            reset_email = session['reset_email']  # Lấy email từ session để dễ kiểm tra
+            print(f"Email trong session: {reset_email}")  # Log email để kiểm tra
+            if session['reset_token'] == token:  # Kiểm tra token
+                if new_password == confirm_password:  # Kiểm tra mật khẩu mới và xác nhận mật khẩu
+                    # Tìm người dùng theo backup_email thay vì email
+                    user = User.query.filter_by(backup_email=reset_email).first()
+                    if user:
+                        # Băm mật khẩu mới và cập nhật vào cơ sở dữ liệu
+                        hashed_password = generate_password_hash(new_password)
+                        user.password = hashed_password
+                        db.session.commit()
+
+                        # Xóa thông tin trong session
+                        session.pop('reset_token', None)
+                        session.pop('reset_email', None)
+
+                        return jsonify(success=True, message="Mật khẩu đã được thay đổi thành công.")
+                    else:
+                        print(f"Không tìm thấy người dùng với email dự phòng: {reset_email}")  # Log lỗi chi tiết
+                        return jsonify(success=False, message="Không tìm thấy người dùng.")
+                else:
+                    return jsonify(success=False, message="Mật khẩu không khớp.")
+            else:
+                return jsonify(success=False, message="Mã xác nhận không hợp lệ.")
+        else:
+            return jsonify(success=False, message="Phiên làm việc không hợp lệ hoặc đã hết hạn.")
+
+    return render_template('reset_password.html')
+
+
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form['email']
+        backup_email = request.form['backup_email']
         username = request.form['username']
         password = request.form['password']
+
+        # Kiểm tra tên miền của email
+        domain = email.split('@')[-1]  # Lấy tên miền từ email
+        if domain not in ALLOWED_DOMAINS:
+            return jsonify(success=False, message="Tên miền email không hợp lệ. Vui lòng sử dụng email với tên miền hợp lệ.")
 
         # Kiểm tra email đã được sử dụng
         existing_user = User.query.filter_by(email=email).first()
@@ -73,13 +203,11 @@ def register():
         # Băm mật khẩu và tạo người dùng
         private_key, public_key = generate_keys()
         pem_private, pem_public = serialize_keys(private_key, public_key)
-
         private_key_pass = encrypt_with_password(password, pem_private)
-
 
         hashed_password = generate_password_hash(password)
 
-        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass)
+        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass ,backup_email = backup_email)
         db.session.add(user)
         db.session.commit()
 
@@ -94,8 +222,7 @@ def register():
 
         # Gửi phản hồi JSON để client hiển thị modal thành công
         response = jsonify(success=True, message="Đăng ký thành công!")
-        response.headers[
-            'X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
+        response.headers['X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
 
         return response
 
@@ -117,13 +244,7 @@ def login():
             session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
-        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  
-
-    # return render_template('inbox.html')  # Change this to 'index.html'
-
-
-
-
+        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")
 
 
 @app.route('/inbox', methods=['GET'])
@@ -143,7 +264,6 @@ def inbox():
             (EncryptedEmail.subject.ilike(f'%{search_query}%'))
         ).join(User, User.id == EncryptedEmail.sender_id)
 
-    # Order received emails by timestamp descending
     received_emails = received_emails.order_by(EncryptedEmail.timestamp.desc()).all()
 
     # Lấy danh sách email đã gửi và sắp xếp theo thời gian giảm dần
@@ -157,7 +277,7 @@ def inbox():
         )
         .join(User, User.id == EncryptedEmail.receiver_id)
         .filter(EncryptedEmail.sender_id == session['user_id'], EncryptedEmail.sender_deleted == False)
-        .order_by(EncryptedEmail.timestamp.desc())  # Đảm bảo thứ tự giảm dần
+        .order_by(EncryptedEmail.timestamp.desc()) 
         .all()
     )
 
@@ -197,6 +317,10 @@ def inbox():
                 soup = BeautifulSoup(decrypted_body, 'html.parser')
                 decrypted_body = soup.get_text(separator=' ')
                 
+                # Chỉ giữ nội dung trước "----Forwarded message----" 
+                if "----Forwarded message----" in decrypted_body: 
+                    decrypted_body = decrypted_body.split("----Forwarded message----")[0]
+                
             email.decrypted_body = decrypted_body
         except Exception as e:
             email.decrypted_body = "Giải mã thất bại."
@@ -229,12 +353,10 @@ def inbox():
 
     return render_template('inbox.html', received_emails=received_emails, sent_emails=email_data, trash_emails=trash_emails)
 
-
-
 @app.route('/move_to_trash', methods=['POST'])
 def move_to_trash():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     data = request.get_json()
     email_ids = data.get('email_ids')
@@ -245,10 +367,10 @@ def move_to_trash():
 
     try:
         for email_id in email_ids:
-            print(f"Attempting to find email with ID: {email_id}")  # Debugging log
+            print(f"Cố gắng tìm email có ID: {email_id}")  
             email = EncryptedEmail.query.get(email_id)
             
-            if not email:  # If no email is found
+            if not email:
                 return jsonify({"success": False, "message": f"Không tìm thấy email với ID {email_id}!"})
 
             # Kiểm tra thư đã nhận hay đã gửi dựa trên sender_id và receiver_id
@@ -270,62 +392,48 @@ def move_to_trash():
 @app.route('/get_trash_emails', methods=['GET'])
 def get_trash_emails():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'})
-
+        return jsonify({'success': False, 'message': 'Không được xác thực!!!'})
+    
     user_id = session['user_id']
     trash_emails = EncryptedEmail.query.filter(
         ((EncryptedEmail.receiver_id == user_id) & (EncryptedEmail.receiver_deleted == True)) |
         ((EncryptedEmail.sender_id == user_id) & (EncryptedEmail.sender_deleted == True))
     ).order_by(EncryptedEmail.timestamp.desc()).all()
-
+    
     emails_data = []
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     for email in trash_emails:
         sender = User.query.get(email.sender_id)
-        email.sender_email = sender.email if sender else "Người gửi không xác định"
-
+        # Kiểm tra nếu email này là của người dùng hiện tại
+        sender_email = sender.email if sender else "Người gửi không xác định"
+        if email.sender_id == user_id:
+            sender_email += " | tôi"
+        
+        # Xử lý thời gian
         if email.timestamp:
             utc_time = email.timestamp
-            email.local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+            local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         else:
-            email.local_time = None
+            local_time = None
 
         emails_data.append({
             'id': email.id,
-            'sender_email': email.sender_email,
+            'sender_email': sender_email,
             'subject': email.subject,
-            'local_time': email.local_time
+            'local_time': local_time
         })
-
+    
     return jsonify({'success': True, 'emails': emails_data})
-
-# @app.route('/delete_emails', methods=['POST'])
-# def delete_emails():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-
-#     data = request.get_json()
-#     email_ids = data.get('emailIds', [])
-#     emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
-
-#     # Permanently delete the emails
-#     for email in emails:
-#         db.session.delete(email)
-
-#     db.session.commit()
-
-#     return jsonify({"message": "Emails deleted successfully"})  
 
 @app.route('/delete_emails', methods=['POST'])
 def delete_emails():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     data = request.get_json()
     email_ids = data.get('emailIds', [])
     emails = EncryptedEmail.query.filter(EncryptedEmail.id.in_(email_ids)).all()
 
-    # Xóa email vĩnh viễn từ thùng rác
     for email in emails:
         # Kiểm tra xem người dùng có quyền xóa email này không
         if (email.receiver_id == session['user_id'] and email.receiver_deleted) or \
@@ -341,7 +449,7 @@ def delete_emails():
 @app.route('/delete_all_trash', methods=['POST'])
 def delete_all_trash():
     if 'user_id' not in session:
-        return jsonify({"success": False, "message": "Not authenticated"})
+        return jsonify({"success": False, "message": "Không được xác thực!!!"})
 
     try:
         # Lấy tất cả thư trong thùng rác của người dùng
@@ -357,8 +465,10 @@ def delete_all_trash():
         db.session.commit()
 
         return jsonify({"success": True, "message": "Tất cả thư trong thùng rác đã được xóa thành công."})
+    
     except Exception as e:
         db.session.rollback()
+        
         return jsonify({"success": False, "message": f"Lỗi khi xóa thư: {str(e)}"})
 
 @app.route('/send', methods=['GET', 'POST'])
@@ -372,13 +482,11 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
-            # return "Bạn không thể gửi email cho chính mình."
             flash("Bạn không thể gửi email cho chính mình.")
             return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
-            # return "Người nhận không tồn tại."
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
@@ -410,7 +518,6 @@ def send_email():
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in the database
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
@@ -421,19 +528,19 @@ def send_email():
 
         db.session.add(email)
         db.session.commit()
-        # return "Email đã được gửi."
         flash("Email đã được gửi.")
+        
         forward_mail = EncryptForward(
             id_body=email.id,
             key_sender=encrypted_aes_key_sender,
             key_receiver=encrypted_aes_key_receiver
         )
+        
         db.session.add(forward_mail)
         db.session.commit()
         return redirect(url_for('inbox'))
 
     return render_template('inbox.html')
-
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
 def decrypt_email(email_id):
@@ -454,7 +561,6 @@ def decrypt_email(email_id):
     is_sent_email = email.sender_id == session['user_id']
     keyAES_email = EncryptForward.query.filter_by(id_body=email_id).first()
 
-        # Định dạng thời gian gửi
     # Thiết lập múi giờ cho thành phố Hồ Chí Minh
     local_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     
@@ -500,7 +606,9 @@ def decrypt_email(email_id):
                 })
         except Exception as e:
             decryption_error = f"Giải mã thất bại: {str(e)}"
+            
         receiver_email = db.session.get(User, email.receiver_id)
+        
         return jsonify({
             'message': "Đây là email bạn đã gửi.",
             'subject': email.subject,
@@ -524,9 +632,8 @@ def decrypt_email(email_id):
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
-
+        # Giải mã nội dung email (giữ nguyên định dạng xuống dòng)
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
-
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
         decrypted_body = decrypted_body_bytes.decode('utf-8', errors='ignore')
 
@@ -550,7 +657,7 @@ def decrypt_email(email_id):
     return jsonify({
         'subject': email.subject,
         'sender_email': sender.email if sender else "Không xác định",
-        'timestamp': timestamp_formatted,  # Thời gian gửi
+        'timestamp': timestamp_formatted,
         'decrypted_body': decrypted_body,
         'decryption_error': decryption_error,
         'decrypted_attachments': decrypted_attachments
@@ -565,7 +672,6 @@ def download_attachment(email_id):
         if email.attachment and private_key:
             attachment_path = os.path.join('attachments', email.attachment)
 
-            # Đọc tệp đã mã hóa
             with open(attachment_path, 'rb') as file:
                 encrypted_data = file.read()
 
@@ -608,19 +714,31 @@ def change_password():
 
         # Kiểm tra xem mật khẩu mới có trùng với mật khẩu xác nhận không
         if new_password != confirm_password:
-            return "Mật khẩu mới và mật khẩu xác nhận không khớp."
+            return jsonify(success=False, message="Mật khẩu mới và mật khẩu xác nhận không khớp.")
 
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, current_password):
-            # Cập nhật mật khẩu mới
-            user.password = generate_password_hash(new_password)
-            db.session.commit()  # Lưu thay đổi vào cơ sở dữ liệu
-            return "Mật khẩu đã được đổi thành công."
 
-        return "Email hoặc mật khẩu hiện tại không đúng."
+        if user and check_password_hash(user.password, current_password):
+            try:
+                # Decrypt the user's current private key with the old password
+                decrypted_private_key = decrypt_with_password(current_password, user.private_key)
+
+                # Re-encrypt the private key with the new password
+                new_encrypted_private_key = encrypt_with_password(new_password, decrypted_private_key)
+
+                # Update the user's password and private key
+                user.password = generate_password_hash(new_password)
+                user.private_key = new_encrypted_private_key
+                db.session.commit()
+
+                return jsonify(success=True, message="Mật khẩu đã được đổi thành công.")
+            except Exception as e:
+                # Handle decryption or encryption errors
+                return jsonify(success=False, message=f"Lỗi khi đổi mật khẩu: {str(e)}")
+        else:
+            return jsonify(success=False, message="Email hoặc mật khẩu hiện tại không đúng.")
 
     return render_template('change_password.html')
-
 
 @app.route('/download_decrypted_file')
 def download_decrypted_file():
@@ -635,11 +753,14 @@ def download_decrypted_file():
     return "Không tìm thấy tệp đã giải mã."
 
 
+
+
+
+
 @app.errorhandler(IntegrityError)
 def handle_integrity_error(error):
     db.session.rollback()
     return "Đã xảy ra lỗi: " + str(error.orig), 400
-
 
 @app.route('/logout')
 def logout():
@@ -647,12 +768,10 @@ def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
 
-
 @app.before_request
 def refresh_session_lifetime():
     if 'user_id' in session:
         session.permanent = True
-
 
 if __name__ == '__main__':
     app.run(debug=True)
