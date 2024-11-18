@@ -26,6 +26,8 @@ import os
 from models import db, User, EncryptedEmail, EncryptForward
 from flask_cors import CORS
 from bs4 import BeautifulSoup
+from flask_mail import Mail
+from flask_socketio import SocketIO
 from utils import (
     generate_keys,
     serialize_keys,
