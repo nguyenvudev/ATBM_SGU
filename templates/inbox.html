@@ -8,6 +8,9 @@
     <link rel="stylesheet" href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
+<!--    <script src="/socket.io/socket.io.js"></script>-->
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+
 </head>
 <body>
     <div class="container">
@@ -132,7 +135,6 @@
                             <th>Chủ đề</th>
                             <th>Thời gian</th>
                             <th>Nội dung</th>
-                            <th>Tệp đính kèm</th>
                             <th class="col-action">Hành động</th>
                         </tr>
                     </thead>
@@ -144,15 +146,7 @@
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
-                            <td>{{ email.decrypted_body | truncate(50) | e }}</td>
-                            <!--Hiển thị tệp đính kèm-->
-                            <td>
-                                {% if email.attachment %}
-                                    <a href="{{ url_for('download_decrypted_file', email_id=email.id) }}" download>{{ email.attachment.filename }}</a>
-                                {% else %}
-                                    Không có tệp
-                                {% endif %}
-                            </td>
+                            <td>{{ email.decrypted_body | truncate(70) | e }}</td>
                             <td class="decode">
                                 <a href="{{ url_for('decrypt_email', email_id=email.id) }}" class="btn-show-decode">
                                     <i class="bx bx-envelope-open"></i>
@@ -435,5 +429,6 @@
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
+
 </body>
 </html>

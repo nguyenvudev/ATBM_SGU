@@ -1,3 +1,4 @@
+
 ///__________Ẩn hiện các form__________///
 // ---- Ẩn hiện sidebar ---- //
 let sidebar = document.querySelector(".sidebar");
@@ -7,6 +8,10 @@ closeBtn.addEventListener("click", () => {
     sidebar.classList.toggle("open");
     menuBtnChange();
 });
+
+// Kết nối đến WebSocket server
+const socket = io();
+
 
 function menuBtnChange() {
     if (sidebar.classList.contains("open")) {
@@ -730,23 +735,24 @@ handleFileSelection('attachment-received', 'file-dropdown-received');
 
 
 ///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
-document.getElementById('send-email-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const formData = new FormData(this);
-    fetch("{{ url_for('send_email') }}", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.status === 'success') {
-            updateSentEmails();
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
+//document.getElementById('send-email-form').addEventListener('submit', function(event) {
+//    event.preventDefault();
+//
+//    const formData = new FormData(this);
+//
+//    fetch("{{ url_for('send_email') }}", {
+//        method: "POST",
+//        body: formData
+//    })
+//    .then(response => response.json())
+//    .then(data => {
+//        alert(data.message);
+//        if (data.status === 'success') {
+//            updateSentEmails();
+//        }
+//    })
+//    .catch(error => console.error('Error:', error));
+//});
 
 function updateSentEmails() {
     fetch("{{ url_for('inbox') }}")
@@ -759,3 +765,18 @@ function updateSentEmails() {
     })
     .catch(error => console.error('Error:', error));
 }
+
+
+
+socket.on('new_email', function(data) {
+    console.log(data.message);
+    location.reload();
+});
+
+socket.on('disconnect', function() {
+    console.log('WebSocket disconnected');
+});
+
+socket.on('connect', function() {
+    console.log('WebSocket Connected');
+});

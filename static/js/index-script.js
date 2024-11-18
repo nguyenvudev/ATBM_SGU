@@ -1,3 +1,4 @@
+
 function showLogin() {
     document.querySelector('.screen-login').classList.add('active');
     document.querySelector('.screen-register').classList.remove('active');
@@ -95,7 +96,6 @@ document.querySelector('.login').addEventListener('submit', function(event) {
     })
     .then(response => {
         if (response.redirected) {
-            // Khi đăng nhập thành công, Flask sẽ tự chuyển hướng đến /inbox
             window.location.href = response.url;  // Chuyển hướng đến URL được trả về (inbox)
         } else {
             return response.json();  // Nếu không chuyển hướng, trả về JSON để kiểm tra lỗi

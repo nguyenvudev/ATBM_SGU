@@ -1,18 +1,16 @@
 from datetime import datetime, timedelta
 import json
 from os.path import basename
+import pytz
 import pdfplumber
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from flask import Flask, flash, render_template, request, redirect, url_for, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import send_file
 import os
 from models import db, User, EncryptedEmail, EncryptForward
-from flask import redirect, url_for, session, render_template
-import pytz
-from flask import jsonify, request
+from flask_cors import CORS
 from bs4 import BeautifulSoup
 from utils import (
     generate_keys,
@@ -31,13 +29,23 @@ import os
 from sqlalchemy.exc import IntegrityError
 import base64
 
+
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS  # Import CORS
+
 app = Flask(__name__)
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///email_encryption.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)
 app.secret_key = os.urandom(24)
 db.init_app(app)
+
+CORS(app)  # Cho phép tất cả các nguồn kết nối đến server Flask
+
+socketio = SocketIO(app, cors_allowed_origins="*")  # Cho phép tất cả các origin kết nối đến
 
 with app.app_context():
     db.create_all()
@@ -86,10 +94,16 @@ def register():
         with open(private_key_filename, 'w') as f:
             f.write(pem_private)
 
+        # Lưu thông tin vào session
+        session['user_id'] = user.id
+        session['email'] = user.email
+        session['username'] = user.username
+        session['private_key'] = decrypt_with_password(password, user.private_key)
+        session['public_key'] = user.public_key
+
         # Gửi phản hồi JSON để client hiển thị modal thành công
         response = jsonify(success=True, message="Đăng ký thành công!")
-        response.headers[
-            'X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
+        response.headers['X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
 
         return response
 
@@ -104,6 +118,7 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
+            # Lưu thông tin vào session khi đăng nhập thành công
             session['user_id'] = user.id
             session['email'] = user.email
             session['username'] = user.username
@@ -111,7 +126,8 @@ def login():
             session['public_key'] = user.public_key
             return redirect(url_for('inbox'))
 
-        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")  
+        return jsonify(success=False, message="Email hoặc mật khẩu không đúng.")
+
 
     # return render_template('inbox.html')  # Change this to 'index.html'
 @app.route('/inbox', methods=['GET'])
@@ -350,30 +366,41 @@ def send_email():
         body = request.form['body']
 
         if recipient_email == session['email']:
-            # return "Bạn không thể gửi email cho chính mình."
             flash("Bạn không thể gửi email cho chính mình.")
             return redirect(url_for('inbox'))
 
         receiver = User.query.filter_by(email=recipient_email).first()
         if not receiver:
-            # return "Người nhận không tồn tại."
             flash("Người nhận không tồn tại.")
             return redirect(url_for('inbox'))
 
-        # Generate AES key and encrypt email body
-        aes_key = generate_aes_key()
+        # Kiểm tra xem người gửi và người nhận đã giao tiếp chưa
+        previous_email = EncryptedEmail.query.filter(
+            ((EncryptedEmail.sender_id == session['user_id']) & (EncryptedEmail.receiver_id == receiver.id)) |
+            ((EncryptedEmail.sender_id == receiver.id) & (EncryptedEmail.receiver_id == session['user_id']))
+        ).first()
+
+        if previous_email:
+            ib_body_key = previous_email.id
+            aes_key_en = EncryptForward.query.filter_by(id_body=ib_body_key).first()
+            if aes_key_en:
+                aes_key_by = rsa_decrypt(aes_key_en.key_sender, session['private_key'])
+                aes_key = bytes.fromhex(aes_key_by)
+        else:
+            # Trường hợp không tìm thấy, tạo AES key mới
+            aes_key = generate_aes_key()
+
+        # Mã hóa nội dung email với khóa AES
         encrypted_body = aes_encrypt(body.encode('utf-8'), aes_key)
 
-        # Encrypt the AES key with the receiver's public key
+        # Mã hóa khóa AES với khóa công khai của người nhận và người gửi
         encrypted_aes_key_receiver = rsa_encrypt(aes_key.hex(), receiver.public_key)
         encrypted_aes_key_sender = rsa_encrypt(aes_key.hex(), session['public_key'])
+
+        # Tạo chữ ký để xác thực email
         signature = create_signature(body, session['private_key'])
 
-        # Save a separate encrypted version for the sender to view later
-        sender_public_key = session['public_key']
-        # encrypted_body_for_sender = rsa_encrypt(body, sender_public_key)
-
-        # Encrypt and save multiple attachments
+        # Mã hóa và lưu các tệp đính kèm
         attachments = request.files.getlist('attachment')
         encrypted_attachments = []
         for attachment in attachments:
@@ -388,7 +415,7 @@ def send_email():
                 with open(os.path.join('attachments', encrypted_filename), 'wb') as f:
                     f.write(encrypted_data)
 
-        # Store email and attachments in the database
+        # Lưu email vào cơ sở dữ liệu
         email = EncryptedEmail(
             sender_id=session['user_id'],
             receiver_id=receiver.id,
@@ -399,18 +426,25 @@ def send_email():
 
         db.session.add(email)
         db.session.commit()
-        # return "Email đã được gửi."
+
+        # Lưu thông tin mã hóa của AES key để gửi tới người nhận và người gửi
+        if not previous_email:
+            forward_mail = EncryptForward(
+                id_body=email.id,
+                key_sender=encrypted_aes_key_sender,
+                key_receiver=encrypted_aes_key_receiver
+            )
+            db.session.add(forward_mail)
+            db.session.commit()
+
+        # Phát sự kiện cho tất cả các client khác
+        socketio.emit('new_email', {'message': 'Email đã được gửi'})
+
         flash("Email đã được gửi.")
-        forward_mail = EncryptForward(
-            id_body=email.id,
-            key_sender=encrypted_aes_key_sender,
-            key_receiver=encrypted_aes_key_receiver
-        )
-        db.session.add(forward_mail)
-        db.session.commit()
         return redirect(url_for('inbox'))
 
     return render_template('inbox.html')
+
 
 
 @app.route('/decrypt_email/<int:email_id>', methods=['GET'])
@@ -502,7 +536,6 @@ def decrypt_email(email_id):
         if decrypted_aes_key is None:
             raise ValueError("Giải mã khóa AES không thành công.")
 
-
         decrypted_aes_key_bytes = bytes.fromhex(decrypted_aes_key)
 
         decrypted_body_bytes = aes_decrypt(bytes.fromhex(email.body), decrypted_aes_key_bytes)
@@ -576,6 +609,7 @@ def download_attachment(email_id):
 
     return render_template('download_attachment.html', email=email)
 
+
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if request.method == 'POST':
@@ -632,5 +666,20 @@ def refresh_session_lifetime():
         session.permanent = True
 
 
+@socketio.on('connect')
+def handle_connect():
+    print("A user connected.")
+    # Các xử lý khi người dùng kết nối
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("A user disconnected.")
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
+
+
+
+
+
