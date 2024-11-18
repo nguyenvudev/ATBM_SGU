@@ -6,8 +6,6 @@
 body {
     font-family: 'Times New Roman', Times, serif;
 }
-
-/* -_Login/Register-_ */
 .container-login,
 .container-register {
     min-height: 100vh;
@@ -16,8 +14,8 @@ body {
     justify-content: center;
 }
 .screen-login,
-.screen-register {
-    /* position: relative; */
+.screen-register,
+.forgot-password {
     position: fixed;
     height: 600px;
     width: 400px;
@@ -32,25 +30,27 @@ body {
     background: linear-gradient(90deg, #DBE9F2, #BEDBED, #466EB4);
 }
 .screen-login.active,
-.screen-register.active {
+.screen-register.active,
+.forgot-password.active {
     transform: translateX(-50%) translateY(0) scale(1);
     opacity: 1;
     pointer-events: auto;
 }
-.screen-content {
+.screen-content,
+.screen-content-forgot {
     z-index: 1;
     position: relative;
     height: 100%;
 }
-.login{
-    width: 380px;
-    padding: 30px;
-    padding-top: 120px;
-}
+.login,
 .register {
     width: 380px;
-    padding: 30px;
-    padding-top: 90px;
+}
+.login {
+    padding: 120px 30px 30px 30px;
+}
+.register {
+    padding: 90px 30px 30px 30px;
 }
 .login-field,
 .register-field {
@@ -282,7 +282,6 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
 .modal-login button:hover,
 .modal-error button:hover {
     background-color: #BEDBED;

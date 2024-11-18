@@ -105,17 +105,14 @@
             <div class="social-login">
                 <h3>Log in via</h3>
                 <div class="social-icons">
-<!--                    <img src="./img/icons8-facebook-48.png" alt="" class="social-login-icon">-->
-<!--                    <img src="./img/icons8-google-48.png" alt="" class="social-login-icon">-->
-                     <img src="{{ url_for('static', filename='img/icons8-facebook-48.png') }}" alt="fb-icon" class="social-login-icon">
-                     <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
+                    <img src="{{ url_for('static', filename='img/icons8-facebook-48.png') }}" alt="fb-icon" class="social-login-icon">
+                    <img src="{{ url_for('static', filename='img/icons8-google-48.png') }}" alt="gg-icon" class="social-login-icon">
                 </div>
             </div>
             <div class="option">
                 <p class="message">Not registered?
-                    <!-- <a href="{{ url_for('register') }}">Create an account</a> |
-                    <a href="{{ url_for('index') }}">Back</a> -->
-                    <a onclick="showRegister()">Create an account</a>
+                    <a onclick="showRegister()">Create an account</a> <br>
+                    <a onclick="forgotPassword()">Forgot password</a>
                 </p>
             </div>
         </div>
@@ -142,6 +139,11 @@
                     <input type="email" class="register-input" name="email" id="email2" placeholder="abc@gmail.com" required />
                 </div>
                 <div class="register-field">
+                    <i class="register-icon fas fa-user"></i>
+                    <input type="email" class="register-input" name="backup_email" id="backup_email" placeholder="abc@gmail.com" required />
+                </div>
+
+                <div class="register-field">
                     <i class="register-icon fas fa-lock"></i>
                     <input type="password" class="register-input" name="password" id="password2" placeholder="Password" required />
                 </div>
@@ -152,8 +154,6 @@
             </form>
             <div class="option">
                 <p class="message">Already register?
-                    <!-- <a href="{{ url_for('login') }}">Sign In</a> |
-                    <a href="{{ url_for('index') }}">Back</a></p> -->
                     <a onclick="showLogin()">Sign In</a>
                 </p>
             </div>
@@ -165,6 +165,55 @@
             <span class="screen-background-shape screen-background-shape1"></span>
         </div>
     </div>
+
+    <!-- Forgot Password-->
+    <div class="forgot-password" id="forgot-password">
+        <div class="screen-content-forgot">
+            <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
+            <form id="forgot-password-form" method="POST" action="/forgot_password">
+                <h2>Forgot Password</h2>
+                <div class="forgot-field">
+                    <label for="email">Nhập email của bạn:</label>
+                </div>
+                <div class="forgot-field">
+                    <i class="forgot-field-icon fas fa-user"></i>
+                    <input type="email" id="email_backup" name="email_backup" required>
+                </div>
+                <button class="button forgot-submit" type="submit">
+                    <span>Submit</span>
+                    <i class="button-icon fas fa-chevron-right"></i>
+                </button>
+            </form>
+            <p id="forgot-password-message"></p>
+            <div class="option">
+                <p class="message">Already register?
+                    <a onclick="showLogin()">Sign In</a>
+                </p>
+            </div>
+        </div>
+        <div class="screen-background">
+            <span class="screen-background-shape screen-background-shape4"></span>
+            <span class="screen-background-shape screen-background-shape3"></span>
+            <span class="screen-background-shape screen-background-shape2"></span>
+            <span class="screen-background-shape screen-background-shape1"></span>
+        </div>
+    </div>
+
+    <!-- Reset Password Form -->
+    <section id="reset-password">
+        <form method="POST" action="/reset_password">
+            <label for="token">Nhập mã xác nhận:</label>
+            <input type="text" id="token" name="token" required>
+
+            <label for="new_password">Nhập mật khẩu mới:</label>
+            <input type="password" id="new_password" name="new_password" required>
+
+            <label for="confirm_password">Xác nhận mật khẩu mới:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+
+            <button type="submit">Đặt lại mật khẩu</button>
+        </form>
+    </section>
 
     <!-- Modal Thông báo đăng ký thành công -->
     <div id="successModal" class="modal-login">
@@ -195,6 +244,27 @@
 
     <div class="overlay"></div>
     <script src="{{ url_for('static', filename='js/index-script.js') }}"></script>
+<script>
+    document.getElementById('forgot-password-form').onsubmit = async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        const response = await fetch('/forgot_password', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        const messageElement = document.getElementById('forgot-password-message');
+        if (result.success) {
+            messageElement.textContent = result.message;
+            messageElement.style.color = 'green';
+        } else {
+            messageElement.textContent = result.message;
+            messageElement.style.color = 'red';
+        }
+    };
+</script>
 
 </body>
 </html>

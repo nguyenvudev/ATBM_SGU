@@ -72,7 +72,7 @@
                 <!-- Account -->
                 <div class="account">
                     <div class="profile-details">
-                        <img src="{{ url_for('static', filename='img/account.jpg') }}" alt="profileImg">
+                        <img src="{{ url_for('static', filename='img/OIP.jpg') }}" alt="profileImg">
                     </div>
                     <form action="" class="form-account">
                         <div class="info">
@@ -81,7 +81,7 @@
                                 <input type="text" name="fullname" id="fullname" class="full-name" placeholder="Nguyễn Văn A" value="{{ session['username'] }}"  readonly />
                                 <input type="email" name="fullemail" id="fullemail" class="full-email" placeholder="abc@gmail.com" value="{{ session['email'] }}" readonly />
                             </div>
-                            <img src="{{ url_for('static', filename='img/account.jpg') }}" alt="profileImg">
+                            <img src="{{ url_for('static', filename='img/OIP (1).jpg') }}" alt="profileImg">
                         </div>
                         <div class="recover-key">
                             <button>Đổi mật khẩu</button>
@@ -123,7 +123,7 @@
                 <div class="head-received">
                     <span class="mail-received">Hộp thư đến</span>
                     <div class="head-icon">
-                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash('received')" style="cursor: pointer;"></i>
+                        <i class='bx bx-trash' id="delete-icon-1" onclick="moveToTrash('received')"></i>
                         <i class='bx bx-dots-vertical-rounded'></i>
                     </div>
                 </div>
@@ -140,13 +140,20 @@
                     </thead>
                     <tbody>
                         {% for email in received_emails %}
-                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email-{{ email.id }}">
+                        <tr class="email-row {% if email.is_read %}read{% else %}unread{% endif %}" id="email1-{{ email.id }}">
                             <td><input type="checkbox" class="email-checkbox-received" data-email-id="{{ email.id }}"></td>
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
                             <td>{{ email.decrypted_body | truncate(70) | e }}</td>
+                            <td>
+                                {% if '----Forwarded message----' in email.decrypted_body %}
+                                    {{ email.decrypted_body.split('----Forwarded message----')[0] | truncate(50) | e }}
+                                {% else %}
+                                    {{ email.decrypted_body | truncate(50) | e }}
+                                {% endif %}
+                            </td>
                             <td class="decode">
                                 <a href="{{ url_for('decrypt_email', email_id=email.id) }}" class="btn-show-decode">
                                     <i class="bx bx-envelope-open"></i>
@@ -253,7 +260,9 @@
 
                     <input type="email" name="recipient" id="recipient" class="form-control" placeholder="Người nhận" required />
                     <input type="text" name="subject" id="subject" class="form-control" placeholder="Tiêu đề" required />
-                    <div id="main" class="form-control-main" contenteditable="true"></div>
+                    <div id="main" class="form-control-main" contenteditable="true">
+                    <div class="file-list-container" id="file-list-container"></div>
+                        </div>
                     <input type="hidden" name="body" id="hidden-body" required />
 
                     <div class="footer-create-mail">
@@ -261,8 +270,11 @@
                         <label for="attachment-create" class="file-label">
                             <i class='bx bx-file'></i>
                         </label>
-                        <input type="file" id="attachment-create" name="attachment" multiple style="display: none;">
+
+                        <input type="file" id="attachment-create" name="attachment" multiple>
                         <div id="file-dropdown-create"></div>
+                        <div id="file-count-create">0 tệp đã chọn</div>
+
                     </div>
                 </form>
             </div>
@@ -280,14 +292,14 @@
                     </div>
                 </div>
                 <div id="noDecryptedBody">
-                    <p style="display: none;">Không có nội dung giải mã.</p>
+                    <p>Không có nội dung giải mã.</p>
                 </div>
                 <div id="attachmentsContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsList" style="display: flex;"></div>
+                    <div id="attachmentsList"></div>
                 </div>
                 <div id="noAttachmentsContent">
-                    <p style="display: none;">Không có tệp đính kèm.</p>
+                    <p>Không có tệp đính kèm.</p>
                 </div>
                 <div class="position-end-decode">
                     <div class="end-decode">
@@ -297,13 +309,13 @@
                                 <span>Trả lời</span>
                             </a>
                             <a class="btn-forward-email-received">
-                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>
+                                <i class="bx bx-share"></i>
                                 <span>Chuyển tiếp</span>
                             </a>
                         </div>
                         <div class="footer-icon">
                             <a>
-                                <button type="button" id="closeFormDecode">Quay lại</button>
+                                <button type="button" id="closeFormDecode"><i class='bx bx-arrow-back'></i></button>
                             </a>
                         </div>
                     </div>
@@ -321,6 +333,7 @@
                         <input type="email" name="recipient" id="recipient-received" class="form-control" placeholder="Người nhận" required />
                         <input type="text" name="subject" id="subject-received" class="form-control" placeholder="Tiêu đề" required />
                         <div id="main-received" class="form-control-main" contenteditable="true"></div>
+
                         <input type="hidden" name="body" id="hidden-body-received" required />
     
                         <div class="footer-rep-received">
@@ -328,8 +341,9 @@
                             <label for="attachment-received" class="file-label">
                                 <i class='bx bx-file'></i>
                             </label>
-                            <input type="file" id="attachment-received" name="attachment" multiple style="display: none;">
+                            <input type="file" id="attachment-received" name="attachment" multiple>
                             <div id="file-dropdown-received"></div>
+                            <div id="file-count-received">0 tệp đã chọn</div>
                         </div>
                     </form>
                 </div> 
@@ -350,35 +364,16 @@
                     </div>
                 </div>
                 <div id="noDecryptedBodySeen">
-                    <p style="display: none;">Không có nội dung giải mã.</p>
+                    <p>Không có nội dung giải mã.</p>
                 </div>
                 <div id="attachmentsSeenContent">
                     <p>Tệp đính kèm:</p>
-                    <div id="attachmentsSeenList" style="display: flex;"></div>
+                    <div id="attachmentsSeenList"></div>
                 </div>
                 <div id="noAttachmentsSeenContent">
-                    <p style="display: none;">Không có tệp đính kèm.</p>
+                    <p>Không có tệp đính kèm.</p>
                 </div>
-           <!--hiển thị cái nút trả lời, quay lại-->
-<!--                <div class="position-end-decode">-->
-<!--                    <div class="end-decode">-->
-<!--                        <div class="rep-mail">-->
-<!--                            <a class="btn-rep-email_send">-->
-<!--                                <i class="bx bx-share"></i>-->
-<!--                                <span>Trả lời</span>-->
-<!--                            </a>-->
-<!--                            <a class="btn-forward-email_send">-->
-<!--                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>-->
-<!--                                <span>Chuyển tiếp</span>-->
-<!--                            </a>-->
-<!--                        </div>-->
-<!--                        <div class="footer-icon">-->
-<!--                            <a>-->
-<!--                                <button type="button" id="close-form-seen">Quay lại</button>-->
-<!--                            </a>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
+
                 <div class="position-end-seen">
                     <div class="end-seen">
                         <div class="rep-mail">
@@ -387,13 +382,13 @@
                                 <span>Trả lời</span>
                             </a>
                             <a class="btn-forward-email-sent">
-                                <i class="bx bx-share" style="transform: scaleX(-1);"></i>
+                                <i class="bx bx-share"></i>
                                 <span>Chuyển tiếp</span>
                             </a>
                         </div>
                         <div class="footer-icon">
                             <a>
-                                <button type="button" id="close-form-seen">Quay lại</button>
+                                <button type="button" id="close-form-seen"><i class='bx bx-arrow-back'></i></button>
                             </a>
                         </div>
                     </div>
@@ -408,24 +403,28 @@
                                 <i class='bx bx-x' id="close-rep-seen"></i>
                             </div>
                         </div>
+
     
                         <input type="email" name="recipient" id="recipient-sent" class="form-control" placeholder="Người nhận" required />
                         <input type="text" name="subject" id="subject-sent" class="form-control" placeholder="Tiêu đề" required />
-                        <div id="main-sent" class="form-control-main" contenteditable="true"></div>
+                        <div id="main-sent" class="form-control-main" contenteditable="true">
+
+                        </div>
                         <input type="hidden" name="body" id="hidden-body-sent" required />
+
     
                         <div class="footer-rep-seen">
                             <button type="submit">Gửi</button>
                             <label for="attachment-sent" class="file-label">
                                 <i class='bx bx-file'></i>
                             </label>
-                            <input type="file" id="attachment-sent" name="attachment" multiple style="display: none;">
+                            <input type="file" id="attachment-sent" name="attachment" multiple>
                             <div id="file-dropdown-sent"></div>
+                            <div id="file-count-sent">0 tệp đã chọn</div>
                         </div>
                     </form>
                 </div>
             </div>
-
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
