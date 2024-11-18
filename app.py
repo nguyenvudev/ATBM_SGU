@@ -24,10 +24,10 @@ from models import db, User, EncryptedEmail, EncryptForward
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from models import db, User, EncryptedEmail, EncryptForward
-from flask_cors import CORS
 from bs4 import BeautifulSoup
 from flask_mail import Mail
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS  # Import CORS
 from utils import (
     generate_keys,
     serialize_keys,
@@ -48,6 +48,10 @@ import string
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__)
 
+
+CORS(app)  # Cho phép tất cả các nguồn kết nối đến server Flask
+
+socketio = SocketIO(app, cors_allowed_origins="*")  # Cho phép tất cả các origin kết nối đến
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///email_encryption.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -833,4 +837,4 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
