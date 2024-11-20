@@ -14,7 +14,6 @@ class User(db.Model):
     reset_token = db.Column(db.String(32), nullable=True)  # Token đặt lại mật khẩu
     token_expiry = db.Column(db.DateTime, nullable=True)
 
-
 class EncryptedEmail(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -29,7 +28,6 @@ class EncryptedEmail(db.Model):
     trash_date = db.Column(db.DateTime)
     is_read = db.Column(db.Boolean, default=False)
 
-
 class EncryptForward(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key_sender = db.Column(db.Text, nullable=False)
@@ -37,10 +35,7 @@ class EncryptForward(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
 class ConnectAES(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_body = db.Column(db.Integer, db.ForeignKey('encrypted_email.id'), nullable=False)
     id_aes = db.Column(db.Integer, db.ForeignKey('encrypt_forward.id'), nullable=False)
-
-

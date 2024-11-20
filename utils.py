@@ -21,11 +21,6 @@ def encrypt_with_password(password, plaintext):
     ciphertext = cipher.encrypt(padded_text.encode())
     return base64.b64encode(salt + iv + ciphertext).decode() # Mã hóa Base64 cho salt, iv, và ciphertext để dễ lưu trữ
 
-# Hàm giải mã AES (chế độ CBC) sử dụng mật khẩu người dùng
-from Crypto.Cipher import AES
-import base64
-
-
 def decrypt_with_password(password, encrypted_data):
     data = base64.b64decode(encrypted_data)
     salt = data[:16]  # Extract the salt
@@ -48,7 +43,6 @@ def decrypt_with_password(password, encrypted_data):
     except UnicodeDecodeError:
         # Return the raw decrypted binary data (in case it's not text)
         return decrypted_data
-
 
 def generate_keys() -> tuple:
     key = RSA.generate(2048)  # Tạo cặp khóa RSA (khóa riêng và khóa công khai) với kích thước 2048-bit

@@ -1,5 +1,3 @@
-
-
 function showLogin() {
     document.querySelector('.screen-login').classList.add('active');
     document.querySelector('.screen-register').classList.remove('active');
@@ -62,7 +60,6 @@ function redirectedToReset() {
     closeForgotPasswordSuccessModal();
     resetPassword();
 }
-
 
 // Hiển thị modal thành công
 function showResetPasswordSuccessModal() {
@@ -157,14 +154,14 @@ document.querySelector('.login').addEventListener('submit', function(event) {
     })
     .then(response => {
         if (response.redirected) {
-            window.location.href = response.url;  // Chuyển hướng đến URL được trả về (inbox)
+            window.location.href = response.url;  
         } else {
-            return response.json();  // Nếu không chuyển hướng, trả về JSON để kiểm tra lỗi
+            return response.json(); 
         }
     })
     .then(data => {
         if (data && !data.success) {
-            showErrorModalLogin(data.message);  // Hiển thị modal lỗi khi có lỗi
+            showErrorModalLogin(data.message);  
         }
     })
     .catch(error => console.error('Error:', error));

@@ -1,4 +1,3 @@
-
 ///__________Ẩn hiện các form__________///
 // ---- Ẩn hiện sidebar ---- //
 let sidebar = document.querySelector(".sidebar");
@@ -11,7 +10,6 @@ closeBtn.addEventListener("click", () => {
 
 // Kết nối đến WebSocket server
 const socket = io();
-
 
 function menuBtnChange() {
     if (sidebar.classList.contains("open")) {
@@ -116,7 +114,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Mở form soạn thư
     mailCreateBtn?.addEventListener('click', function() {
         formMailCreate.classList.toggle('active');
-    
         if (formMailCreate.classList.contains('active')) {
             removeAllHoverEffects();
             document.querySelector('a.mail-create').classList.add('hover-effect');
@@ -212,10 +209,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="merge-file">
                                     <div class="form-file">
                                         <div class="line">
-                                            ${fileIcon.icon} <!-- Icon lớn cho loại tệp -->
+                                            ${fileIcon.icon}
                                         </div>
                                         <a href="${attachment.path}" download>
-                                            <span class="icon-small">${fileIcon.icon}</span> <!-- Icon nhỏ cạnh tên tệp -->
+                                            <span class="icon-small">${fileIcon.icon}</span>
                                             ${attachment.filename}
                                         </a>
                                         <div class="corner-triangle" style="border-top-color: ${fileIcon.color};"></div>
@@ -294,7 +291,6 @@ document.addEventListener("DOMContentLoaded", function() {
     closeRepReceived?.addEventListener('click', function () {
         formRepReceivedMail.classList.remove('active');
     });
-
 
      // ----- Lấy thông tin cho formSentMail ----- //
     function hideFormSeen() {
@@ -541,7 +537,7 @@ document.getElementById('delete-now').addEventListener('click', function() {
         .then(data => {
             if (data.success) {
                 alert('Tất cả thư trong thùng rác đã được xóa thành công!');
-                location.reload(); // Tải lại trang để cập nhật trạng thái
+                location.reload(); 
             } else {
                 alert('Có lỗi xảy ra khi xóa tất cả thư. Vui lòng thử lại.');
             }
@@ -593,6 +589,7 @@ function moveToTrash(folderType) {
         } else {
             alert(data.message);
         }
+        location.reload();
     })
     .catch(error => {
         console.error('Lỗi:', error);
@@ -718,15 +715,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // ----- Gửi nhiều file và chuyển thành dropdown với thanh upload ----- //
 function handleFileSelection(inputId, containerId, countId) {
-
     let selectedFiles = [];
-
     document.getElementById(inputId).addEventListener('change', function () {
         const newFiles = Array.from(this.files);
 
-
         // Thêm file mới vào danh sách nếu chưa có
-
         newFiles.forEach(file => {
             if (!selectedFiles.some(f => f.file.name === file.name && f.file.size === file.size)) {
                 selectedFiles.push({ file, uploaded: false });
@@ -734,7 +727,6 @@ function handleFileSelection(inputId, containerId, countId) {
         });
 
         updateFileList(containerId);
-
         updateInputFiles(inputId);
         updateFileCount(countId);
     });
@@ -757,7 +749,7 @@ function handleFileSelection(inputId, containerId, countId) {
             const fileSize = document.createElement('span');
             fileSize.className = 'file-size';
 
-            fileSize.textContent = `(${(file.size / 1024).toFixed(1)}K)`; // Chuyển đổi kích thước sang KB
+            fileSize.textContent = `(${(file.size / 1024).toFixed(1)}K)`;
 
             const progressBar = document.createElement('div');
             progressBar.className = 'progress-bar';
@@ -765,19 +757,15 @@ function handleFileSelection(inputId, containerId, countId) {
             progress.className = 'progress';
             progressBar.appendChild(progress);
 
-
             const deleteButton = document.createElement('span');
             deleteButton.className = 'delete-button';
             deleteButton.textContent = 'X';
 
-
             // Xóa file khi nhấn nút "X"
-
             deleteButton.addEventListener('click', function () {
                 selectedFiles.splice(index, 1);
                 updateFileList(containerId);
                 updateInputFiles(inputId);
-
                 updateFileCount(countId);
             });
 
@@ -790,19 +778,19 @@ function handleFileSelection(inputId, containerId, countId) {
             // Giả lập tiến trình upload nếu chưa upload
             if (!uploaded) {
                 let uploadProgress = 0;
-                const uploadSpeed = Math.min(Math.max(file.size / 10240, 100), 1000); // Giả lập tốc độ upload dựa vào kích thước file
+                const uploadSpeed = Math.min(Math.max(file.size / 10240, 100), 1000); 
                 const uploadInterval = setInterval(() => {
                     uploadProgress += 10;
                     progress.style.width = `${uploadProgress}%`;
                     if (uploadProgress >= 100) {
                         clearInterval(uploadInterval);
                         item.uploaded = true;
-                        progressBar.style.display = 'none';  // Ẩn thanh progress khi upload xong
+                        progressBar.style.display = 'none';  
                     }
-                }, uploadSpeed); // Tốc độ upload dựa vào kích thước file
+                }, uploadSpeed); 
             } else {
                 progress.style.width = '100%';
-                progressBar.style.display = 'none';  // Ẩn thanh progress nếu đã upload
+                progressBar.style.display = 'none';  
             }
         });
     }
@@ -821,7 +809,6 @@ function handleFileSelection(inputId, containerId, countId) {
             fileCountContainer.textContent = `${selectedFiles.length} tệp đã chọn`;
         }
     }
-
 }
 
 // Initialize when the page loads
@@ -829,49 +816,12 @@ document.addEventListener('DOMContentLoaded', function () {
     handleFileSelection('attachment-sent', 'file-list-container');
 });
 
-
-
 // Sử dụng hàm cho từng form riêng biệt
 document.addEventListener('DOMContentLoaded', function () {
     handleFileSelection('attachment-create', 'file-dropdown-create', 'file-count-create');
     handleFileSelection('attachment-sent', 'file-dropdown-sent', 'file-count-sent');
     handleFileSelection('attachment-received', 'file-dropdown-received', 'file-count-received');
 });
-
-
-///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
-//document.getElementById('send-email-form').addEventListener('submit', function(event) {
-//    event.preventDefault();
-//
-//    const formData = new FormData(this);
-//
-//    fetch("{{ url_for('send_email') }}", {
-//        method: "POST",
-//        body: formData
-//    })
-//    .then(response => response.json())
-//    .then(data => {
-//        alert(data.message);
-//        if (data.status === 'success') {
-//            updateSentEmails();
-//        }
-//    })
-//    .catch(error => console.error('Error:', error));
-//});
-
-function updateSentEmails() {
-    fetch("{{ url_for('inbox') }}")
-    .then(response => response.text())
-    .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newTbody = doc.getElementById('sent-emails-tbody');
-        document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-
 
 socket.on('new_email', function(data) {
     console.log(data.message);
