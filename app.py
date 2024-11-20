@@ -100,7 +100,7 @@ def send_reset_email(user_email, token):
 
 
 # Danh sách các tên miền email được phép
-ALLOWED_DOMAINS = ['ATBM.com', 'ATBM.org']
+ALLOWED_DOMAINS = ['@ATBM.com', '@ATBM.org']
 
 with app.app_context():
     db.create_all()
@@ -175,8 +175,6 @@ def reset_password():
 
 
 
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -185,10 +183,15 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        # Kiểm tra tên miền của email
-        domain = email.split('@')[-1]  # Lấy tên miền từ email
-        if domain not in ALLOWED_DOMAINS:
-            return jsonify(success=False, message="Tên miền email không hợp lệ. Vui lòng sử dụng email với tên miền hợp lệ.")
+        # Tự động bổ sung domain nếu email không chứa '@'
+        if '@' not in email:
+            default_domain = ALLOWED_DOMAINS 
+            email = f"{email}@{default_domain}"
+
+        # # Kiểm tra tên miền của email
+        # domain = email.split('@')[-1]  # Lấy tên miền từ email
+        # if domain not in ALLOWED_DOMAINS:
+        #     return jsonify(success=False, message="Tên miền email không hợp lệ. Vui lòng sử dụng email với tên miền hợp lệ.")
 
         # Kiểm tra email đã được sử dụng
         existing_user = User.query.filter_by(email=email).first()
@@ -207,7 +210,7 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass ,backup_email = backup_email)
+        user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass, backup_email=backup_email)
         db.session.add(user)
         db.session.commit()
 
@@ -227,6 +230,58 @@ def register():
         return response
 
     return render_template('index.html')
+
+
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if request.method == 'POST':
+#         email = request.form['email']
+#         backup_email = request.form['backup_email']
+#         username = request.form['username']
+#         password = request.form['password']
+
+#         # Kiểm tra tên miền của email
+#         domain = email.split('@')[-1]  # Lấy tên miền từ email
+#         if domain not in ALLOWED_DOMAINS:
+#             return jsonify(success=False, message="Tên miền email không hợp lệ. Vui lòng sử dụng email với tên miền hợp lệ.")
+
+#         # Kiểm tra email đã được sử dụng
+#         existing_user = User.query.filter_by(email=email).first()
+#         if existing_user:
+#             return jsonify(success=False, message="Email đã được sử dụng. Vui lòng chọn một email khác.")
+
+#         # Kiểm tra tên người dùng đã được sử dụng
+#         existing_username = User.query.filter_by(username=username).first()
+#         if existing_username:
+#             return jsonify(success=False, message="Tên người dùng đã được sử dụng. Vui lòng chọn một tên khác.")
+
+#         # Băm mật khẩu và tạo người dùng
+#         private_key, public_key = generate_keys()
+#         pem_private, pem_public = serialize_keys(private_key, public_key)
+#         private_key_pass = encrypt_with_password(password, pem_private)
+
+#         hashed_password = generate_password_hash(password)
+
+#         user = User(email=email, username=username, password=hashed_password, public_key=pem_public, private_key=private_key_pass ,backup_email = backup_email)
+#         db.session.add(user)
+#         db.session.commit()
+
+#         # Đường dẫn tới file khóa riêng tư
+#         private_key_dir = 'private_keys'
+#         os.makedirs(private_key_dir, exist_ok=True)
+#         private_key_filename = os.path.join(private_key_dir, f"private_key_{email}.pem")
+
+#         # Lưu khóa riêng tư vào file
+#         with open(private_key_filename, 'w') as f:
+#             f.write(pem_private)
+
+#         # Gửi phản hồi JSON để client hiển thị modal thành công
+#         response = jsonify(success=True, message="Đăng ký thành công!")
+#         response.headers['X-Private-Key-File'] = private_key_filename  # Thêm tên file vào header để client có thể tải file
+
+#         return response
+
+#     return render_template('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
