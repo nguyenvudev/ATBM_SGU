@@ -1,3 +1,4 @@
+
 ///__________Ẩn hiện các form__________///
 // ---- Ẩn hiện sidebar ---- //
 let sidebar = document.querySelector(".sidebar");
@@ -7,6 +8,10 @@ closeBtn.addEventListener("click", () => {
     sidebar.classList.toggle("open");
     menuBtnChange();
 });
+
+// Kết nối đến WebSocket server
+const socket = io();
+
 
 function menuBtnChange() {
     if (sidebar.classList.contains("open")) {
@@ -835,23 +840,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 ///__________ Ajax tự động reload để cập nhật mail khi gửi mail__________///
-document.getElementById('send-email-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const formData = new FormData(this);
-    fetch("{{ url_for('send_email') }}", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.status === 'success') {
-            updateSentEmails();
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
+//document.getElementById('send-email-form').addEventListener('submit', function(event) {
+//    event.preventDefault();
+//
+//    const formData = new FormData(this);
+//
+//    fetch("{{ url_for('send_email') }}", {
+//        method: "POST",
+//        body: formData
+//    })
+//    .then(response => response.json())
+//    .then(data => {
+//        alert(data.message);
+//        if (data.status === 'success') {
+//            updateSentEmails();
+//        }
+//    })
+//    .catch(error => console.error('Error:', error));
+//});
 
 function updateSentEmails() {
     fetch("{{ url_for('inbox') }}")
@@ -863,4 +869,61 @@ function updateSentEmails() {
         document.getElementById('sent-emails-tbody').innerHTML = newTbody.innerHTML;
     })
     .catch(error => console.error('Error:', error));
+}
+
+
+
+socket.on('new_email', function(data) {
+    console.log(data.message);
+    location.reload();
+});
+
+socket.on('disconnect', function() {
+    console.log('WebSocket disconnected');
+});
+
+socket.on('connect', function() {
+    console.log('WebSocket Connected');
+});
+
+
+document.querySelector('.form-recover-key').onsubmit = async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const response = await fetch('/change_password', {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('successChangePasswordMessage').textContent = result.message;
+        showChangePasswordSuccessModal();
+    } else {
+        document.getElementById('errorChangePasswordMessage').textContent = result.message;
+        showChangePasswordErrorModal();
+    }
+};
+
+// Hiển thị modal thành công
+function showChangePasswordSuccessModal() {
+    document.getElementById('changePasswordSuccessModal').classList.add('active');
+}
+
+// Đóng modal thành công
+function closeChangePasswordSuccessModal() {
+    document.getElementById('changePasswordSuccessModal').classList.remove('active');
+    document.querySelector('.form-recover-key').reset(); // Đặt lại form
+}
+
+// Hiển thị modal lỗi
+function showChangePasswordErrorModal() {
+    document.getElementById('changePasswordErrorModal').classList.add('active');
+}
+
+// Đóng modal lỗi
+function closeChangePasswordErrorModal() {
+    document.getElementById('changePasswordErrorModal').classList.remove('active');
 }

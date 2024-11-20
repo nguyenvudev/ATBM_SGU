@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,10 +15,9 @@
 <body>
     <!-- Header Section -->
     <header>
-        <div class="logo">Mã hóa Email</div>
+        <div class="logo" id="logo">Mã hóa Email</div>
         <nav>
             <a href="#features">Tính năng</a>
-            <a href="#contact">Liên hệ</a>
         </nav>
         <div class="cta-buttons">
             <button onclick="showRegister()" class="btn">Đăng ký</button>
@@ -99,6 +100,8 @@
                     <span class="button-text">Log In Now</span>
                     <i class="button-icon fas fa-chevron-right"></i>
                 </button>
+                <br>
+                <a onclick="forgotPassword()" class="title-forgot">Forgot password</a>
             </form>
             <div class="social-login">
                 <h3>Log in via</h3>
@@ -109,8 +112,7 @@
             </div>
             <div class="option">
                 <p class="message">Not registered?
-                    <a onclick="showRegister()">Create an account</a> <br>
-                    <a onclick="forgotPassword()">Forgot password</a>
+                    <a onclick="showRegister()">Create an account</a>
                 </p>
             </div>
         </div>
@@ -134,13 +136,12 @@
                 </div>
                 <div class="register-field">
                     <i class="register-icon fas fa-user"></i>
-                    <input type="email" class="register-input" name="email" id="email2" placeholder="abc@gmail.com" required />
+                    <input type="email" class="register-input" name="email" id="email2" placeholder="abc@ATBM.com" required />
                 </div>
                 <div class="register-field">
                     <i class="register-icon fas fa-user"></i>
                     <input type="email" class="register-input" name="backup_email" id="backup_email" placeholder="abc@gmail.com" required />
                 </div>
-
                 <div class="register-field">
                     <i class="register-icon fas fa-lock"></i>
                     <input type="password" class="register-input" name="password" id="password2" placeholder="Password" required />
@@ -165,24 +166,24 @@
     </div>
 
     <!-- Forgot Password-->
-    <div class="forgot-password" id="forgot-password">
-        <div class="screen-content-forgot">
+    <div class="screen-password">
+        <div class="screen-content">
             <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
-            <form id="forgot-password-form" method="POST" action="/forgot_password">
+            <form class="forgot" id="forgot-password-form"  method="POST" action="/forgot_password">
                 <h2>Forgot Password</h2>
                 <div class="forgot-field">
-                    <label for="email">Nhập email của bạn:</label>
+                    <i class="forgot-icon fas fa-user"></i>
+                    <input type="email" class="forgot-input" id="email_forgot" name="email" placeholder="abc@ATBM.com" required />
                 </div>
                 <div class="forgot-field">
-                    <i class="forgot-field-icon fas fa-user"></i>
-                    <input type="email" id="email_backup" name="email_backup" required>
+                    <i class="forgot-icon fas fa-user"></i>
+                    <input type="email" class="forgot-input" id="email_backup" name="email_backup" placeholder="abc@gmail.com" required />
                 </div>
                 <button class="button forgot-submit" type="submit">
-                    <span>Submit</span>
+                    <span class="button-text">Submit</span>
                     <i class="button-icon fas fa-chevron-right"></i>
                 </button>
             </form>
-            <p id="forgot-password-message"></p>
             <div class="option">
                 <p class="message">Already register?
                     <a onclick="showLogin()">Sign In</a>
@@ -198,24 +199,40 @@
     </div>
 
     <!-- Reset Password Form -->
-    <section id="reset-password">
-        <form method="POST" action="/reset_password">
-            <label for="token">Nhập mã xác nhận:</label>
-            <input type="text" id="token" name="token" required>
-
-            <label for="new_password">Nhập mật khẩu mới:</label>
-            <input type="password" id="new_password" name="new_password" required>
-
-            <label for="confirm_password">Xác nhận mật khẩu mới:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-
-            <button type="submit">Đặt lại mật khẩu</button>
-        </form>
-    </section>
+    <div class="screen-reset" id="reset-password">
+        <div class="screen-content">
+            <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
+            <form class="reset" id="reset-password-form" method="POST" action="/reset_password">
+                <h2>New Password</h2>
+                <div class="reset-field">
+                    <i class="reset-icon fas fa-user"></i>
+                    <input type="text" class="reset-input" id="token" name="token" placeholder="Mã xác nhận" required />
+                </div>
+                <div class="reset-field">
+                    <i class="reset-icon fas fa-lock"></i>
+                    <input type="password" class="reset-input" id="new_password" name="new_password" placeholder="Nhập mật khẩu mới" required />
+                </div>
+                <div class="reset-field">
+                    <i class="reset-icon fas fa-lock"></i>
+                    <input type="password" class="reset-input" id="confirm_password" name="confirm_password" placeholder="Xác nhận mật khẩu mới" required />
+                </div>
+                <button class="button forgot-submit" type="submit">
+                    <span class="button-text">Reset password</span>
+                    <i class="button-icon fas fa-chevron-right"></i>
+                </button>
+            </form>
+        </div>
+        <div class="screen-background">
+            <span class="screen-background-shape screen-background-shape4"></span>
+            <span class="screen-background-shape screen-background-shape3"></span>
+            <span class="screen-background-shape screen-background-shape2"></span>
+            <span class="screen-background-shape screen-background-shape1"></span>
+        </div>
+    </div>
 
     <!-- Modal Thông báo đăng ký thành công -->
-    <div id="successModal" class="modal-login">
-        <div class="modal-content-login">
+    <div id="successModal" class="modal">
+        <div class="modal-content">
             <h2>Đăng ký thành công!</h2>
             <p>Bạn đã đăng ký thành công. Nhấn "OK" để chuyển đến trang đăng nhập.</p>
             <button onclick="redirectToLogin()">OK</button>
@@ -223,8 +240,8 @@
     </div>
 
     <!-- Modal Thông báo lỗi -->
-    <div id="errorModal" class="modal-error">
-        <div class="modal-content-error">
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
             <h2>Lỗi đăng ký</h2>
             <p id="errorMessage"></p>
             <button onclick="closeErrorModal()">OK</button>
@@ -232,36 +249,51 @@
     </div>
 
     <!-- Modal Thông báo lỗi khi đăng nhập -->
-    <div id="errorModalLogin" class="modal-error">
-        <div class="modal-content-error">
+    <div id="errorModalLogin" class="modal">
+        <div class="modal-content">
             <h2>Lỗi đăng nhập</h2>
             <p id="errorMessageLogin"></p>
             <button onclick="closeErrorModalLogin()">OK</button>
         </div>
     </div>
 
+    <!-- Modal thành công -->
+    <div id="forgotPasswordSuccessModal" class="modal">
+        <div class="modal-content">
+            <h2>Thành công!</h2>
+            <p id="successForgotPasswordMessage"></p>
+            <button onclick="redirectedToReset()">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal lỗi -->
+    <div id="forgotPasswordErrorModal" class="modal">
+        <div class="modal-content">
+            <h2>Lỗi!</h2>
+            <p id="errorForgotPasswordMessage"></p>
+            <button onclick="closeForgotPasswordErrorModal()">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Modal thành công -->
+    <div id="resetPasswordSuccessModal" class="modal">
+        <div class="modal-content">
+            <h2>Thành công!</h2>
+            <p id="successResetPasswordMessage"></p>
+            <button onclick="closeResetPasswordSuccessModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal lỗi -->
+    <div id="resetPasswordErrorModal" class="modal">
+        <div class="modal-content">
+            <h2>Lỗi!</h2>
+            <p id="errorResetPasswordMessage"></p>
+            <button onclick="closeResetPasswordErrorModal()">Đóng</button>
+        </div>
+    </div>
+
     <div class="overlay"></div>
     <script src="{{ url_for('static', filename='js/index-script.js') }}"></script>
-<script>
-    document.getElementById('forgot-password-form').onsubmit = async function(event) {
-        event.preventDefault();
-
-        const formData = new FormData(this);
-        const response = await fetch('/forgot_password', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-
-        const messageElement = document.getElementById('forgot-password-message');
-        if (result.success) {
-            messageElement.textContent = result.message;
-            messageElement.style.color = 'green';
-        } else {
-            messageElement.textContent = result.message;
-            messageElement.style.color = 'red';
-        }
-    };
-</script>
 </body>
 </html>
