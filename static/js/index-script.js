@@ -1,6 +1,9 @@
+
+
 function showLogin() {
     document.querySelector('.screen-login').classList.add('active');
     document.querySelector('.screen-register').classList.remove('active');
+    document.querySelector('.screen-password').classList.remove('active');
 }
 function showRegister() {
     document.querySelector('.screen-register').classList.add('active');
@@ -9,11 +12,16 @@ function showRegister() {
 function closeModal() {
     document.querySelector('.screen-login').classList.remove('active');
     document.querySelector('.screen-register').classList.remove('active');
-    document.querySelector('.forgot-password').classList.remove('active');
+    document.querySelector('.screen-password').classList.remove('active');
+    document.querySelector('.screen-reset').classList.remove('active');
 }
 function forgotPassword() {
-    document.querySelector('.forgot-password').classList.add('active');
+    document.querySelector('.screen-password').classList.add('active');
     document.querySelector('.screen-login').classList.remove('active');
+}
+function resetPassword() {
+    document.querySelector('.screen-reset').classList.add('active');
+    document.querySelector('.screen-password').classList.remove('active');
 }
 
 // Hiển thị modal thành công
@@ -23,9 +31,59 @@ function showSuccessModal() {
 
 // Chuyển hướng đến trang đăng nhập
 function redirectToLogin() {
-    closeModal(); 
+    closeModal();
     document.getElementById('successModal').style.display = 'none';
-    showLogin();  
+    showLogin();
+}
+
+// Hiển thị modal thành công
+function showForgotPasswordSuccessModal() {
+    document.getElementById('forgotPasswordSuccessModal').style.display = 'block';
+}
+
+// Đóng modal thành công
+function closeForgotPasswordSuccessModal() {
+    document.getElementById('forgotPasswordSuccessModal').style.display = 'none';
+}
+
+// Hiển thị modal lỗi
+function showForgotPasswordErrorModal() {
+    document.getElementById('forgotPasswordErrorModal').style.display = 'block';
+}
+
+// Đóng modal lỗi
+function closeForgotPasswordErrorModal() {
+    document.getElementById('forgotPasswordErrorModal').style.display = 'none';
+}
+
+// Chuyển hướng đến form reset password
+function redirectedToReset() {
+    closeModal();
+    closeForgotPasswordSuccessModal();
+    resetPassword();
+}
+
+
+// Hiển thị modal thành công
+function showResetPasswordSuccessModal() {
+    document.getElementById('resetPasswordSuccessModal').style.display = 'block';
+}
+
+// Đóng modal thành công
+function closeResetPasswordSuccessModal() {
+    document.getElementById('resetPasswordSuccessModal').style.display = 'none';
+    // Có thể chuyển hướng về trang đăng nhập nếu cần
+    redirectToLogin();
+}
+
+// Hiển thị modal lỗi
+function showResetPasswordErrorModal() {
+    document.getElementById('resetPasswordErrorModal').style.display = 'block';
+}
+
+// Đóng modal lỗi
+function closeResetPasswordErrorModal() {
+    document.getElementById('resetPasswordErrorModal').style.display = 'none';
 }
 
 // Hiển thị modal lỗi
@@ -111,3 +169,49 @@ document.querySelector('.login').addEventListener('submit', function(event) {
     })
     .catch(error => console.error('Error:', error));
 });
+
+// Reload lại trang index
+document.getElementById('logo').addEventListener('click', function () {
+    location.reload();
+});
+
+// Thông báo mã xác nhận
+document.getElementById('forgot-password-form').onsubmit = async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const response = await fetch('/forgot_password', {
+        method: 'POST',
+        body: formData
+    });
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('successForgotPasswordMessage').textContent = result.message;
+        showForgotPasswordSuccessModal();
+    } else {
+        document.getElementById('errorForgotPasswordMessage').textContent = result.message;
+        showForgotPasswordErrorModal();
+    }
+};
+
+// Thông báo thay đổi mật khẩu
+document.getElementById('reset-password-form').onsubmit = async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const response = await fetch('/reset_password', {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('successResetPasswordMessage').textContent = result.message;
+        showResetPasswordSuccessModal();
+    } else {
+        document.getElementById('errorResetPasswordMessage').textContent = result.message;
+        showResetPasswordErrorModal();
+    }
+};

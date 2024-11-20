@@ -8,6 +8,9 @@
     <link rel="stylesheet" href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
+<!--    <script src="/socket.io/socket.io.js"></script>-->
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+
 </head>
 <body>
     <div class="container">
@@ -69,7 +72,7 @@
                 <!-- Account -->
                 <div class="account">
                     <div class="profile-details">
-                        <img src="{{ url_for('static', filename='img/OIP.jpg') }}" alt="profileImg">
+                        <img src="{{ url_for('static', filename='img/avt.webp') }}" alt="profileImg">
                     </div>
                     <form action="" class="form-account">
                         <div class="info">
@@ -78,7 +81,7 @@
                                 <input type="text" name="fullname" id="fullname" class="full-name" placeholder="Nguyễn Văn A" value="{{ session['username'] }}"  readonly />
                                 <input type="email" name="fullemail" id="fullemail" class="full-email" placeholder="abc@gmail.com" value="{{ session['email'] }}" readonly />
                             </div>
-                            <img src="{{ url_for('static', filename='img/OIP (1).jpg') }}" alt="profileImg">
+                            <img src="{{ url_for('static', filename='img/avt.webp') }}" alt="profileImg">
                         </div>
                         <div class="recover-key">
                             <button>Đổi mật khẩu</button>
@@ -115,6 +118,24 @@
                 </div>
             </div>
 
+            <!-- Modal thành công -->
+            <div id="changePasswordSuccessModal" class="modal">
+                <div class="modal-content">
+                    <h2>Thành công!</h2>
+                    <p id="successChangePasswordMessage"></p>
+                    <button onclick="closeChangePasswordSuccessModal()">OK</button>
+                </div>
+            </div>
+
+            <!-- Modal lỗi -->
+            <div id="changePasswordErrorModal" class="modal">
+                <div class="modal-content">
+                    <h2>Lỗi!</h2>
+                    <p id="errorChangePasswordMessage"></p>
+                    <button onclick="closeChangePasswordErrorModal()">Đóng</button>
+                </div>
+            </div>
+
             <!-- Thư đến -->
             <div class="form-mail-received">
                 <div class="head-received">
@@ -142,6 +163,7 @@
                             <td>{{ email.sender_email }}</td>
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <!-- Nội dung đã giải mã, giới hạn số từ -->
                             <td>
                                 {% if '----Forwarded message----' in email.decrypted_body %}
                                     {{ email.decrypted_body.split('----Forwarded message----')[0] | truncate(50) | e }}
@@ -423,5 +445,6 @@
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/inbox-script.js') }}"></script>
+
 </body>
 </html>
