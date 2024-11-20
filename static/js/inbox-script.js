@@ -261,6 +261,27 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
+    //Mới
+    // Thêm biểu tượng ba chấm vào trước nội dung decryptedBody
+    const decryptedBody = document.getElementById('decryptedBody');
+    const toggleIcon = document.createElement('span');
+    toggleIcon.innerHTML = '&#x22EE;'; // Biểu tượng ba chấm
+    toggleIcon.style.cursor = 'pointer';
+    toggleIcon.style.marginRight = '10px';
+    toggleIcon.style.display = 'inline-block';
+
+    // Thêm biểu tượng ba chấm vào trước nội dung
+    decryptedBody.parentNode.insertBefore(toggleIcon, decryptedBody);
+
+    // Ẩn nội dung decryptedBody ban đầu
+    decryptedBody.style.display = 'none';
+
+    // Xử lý sự kiện nhấp vào biểu tượng ba chấm
+    toggleIcon.addEventListener('click', function () {
+        const isHidden = decryptedBody.style.display === 'none';
+        decryptedBody.style.display = isHidden ? 'block' : 'none';
+    });
+
     // Mở form trả lời thư
     mailRepReceivedBtn?.addEventListener('click', function () {
         formRepReceivedMail.classList.toggle('active');
@@ -272,6 +293,8 @@ document.addEventListener("DOMContentLoaded", function() {
             'Vào lúc: ' + document.getElementById('timeEmailReceived').innerText + 
             ' < ' + document.getElementById('senderEmail').innerText + ' > đã viết:' + '\n\n' +
             document.getElementById('decryptedBody').innerText;
+
+        decryptedBody.style.display = 'none'; //test
     })
 
     // Mở form chuyển tiếp
@@ -288,6 +311,8 @@ document.addEventListener("DOMContentLoaded", function() {
             'Tiêu đề: ' + document.getElementById('subjectEmail').innerText + '\n' + 
             'Với nội dung sau:' + '\n\n' +
             document.getElementById('decryptedBody').innerText; 
+
+        decryptedBody.style.display = 'none'; //test
     }) 
 
     // Đóng form trả lời thư

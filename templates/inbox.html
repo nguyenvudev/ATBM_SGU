@@ -167,6 +167,8 @@
                             <td>
                                 {% if '----Forwarded message----' in email.decrypted_body %}
                                     {{ email.decrypted_body.split('----Forwarded message----')[0] | truncate(50) | e }}
+                                {% elif "Vào lúc:" in email.decrypted_body %}
+                                    {{ email.decrypted_body.split('Vào lúc')[0] | truncate(50) | e }}
                                 {% else %}
                                     {{ email.decrypted_body | truncate(50) | e }}
                                 {% endif %}

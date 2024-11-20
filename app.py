@@ -408,6 +408,10 @@ def inbox():
                 soup = BeautifulSoup(decrypted_body, 'html.parser')
                 decrypted_body = soup.get_text(separator=' ')
                 
+                # Chỉ giữ nội dung trước "Vào lúc" (nếu có)
+                if "Vào lúc:" in decrypted_body:
+                    decrypted_body = decrypted_body.split("Vào lúc")[0]
+        
                 # Chỉ giữ nội dung trước "----Forwarded message----" 
                 if "----Forwarded message----" in decrypted_body: 
                     decrypted_body = decrypted_body.split("----Forwarded message----")[0]
