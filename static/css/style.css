@@ -6,16 +6,10 @@
 body {
     font-family: 'Times New Roman', Times, serif;
 }
-.container-login,
-.container-register {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 .screen-login,
 .screen-register,
-.forgot-password {
+.screen-password,
+.screen-reset {
     position: fixed;
     height: 600px;
     width: 400px;
@@ -31,40 +25,50 @@ body {
 }
 .screen-login.active,
 .screen-register.active,
-.forgot-password.active {
+.screen-password.active,
+.screen-reset.active {
     transform: translateX(-50%) translateY(0) scale(1);
     opacity: 1;
     pointer-events: auto;
 }
-.screen-content,
-.screen-content-forgot {
+.screen-content {
     z-index: 1;
     position: relative;
     height: 100%;
 }
 .login,
-.register {
+.register,
+.forgot,
+.reset {
     width: 380px;
 }
-.login {
+.login,
+.forgot,
+.reset {
     padding: 120px 30px 30px 30px;
 }
 .register {
     padding: 90px 30px 30px 30px;
 }
 .login-field,
-.register-field {
+.register-field,
+.forgot-field,
+.reset-field {
     padding: 20px 0px;
     position: relative;
 }
 .login-icon,
-.register-icon {
+.register-icon,
+.forgot-icon,
+.reset-icon {
     position: absolute;
     top: 30px;
     color: #466EB4;
 }
 .login-input,
-.register-input {
+.register-input,
+.forgot-input,
+.reset-input {
     border: none;
     border-bottom: 2px solid #D1D1D4;
     background: none;
@@ -79,12 +83,20 @@ body {
 .login-input:hover,
 .register-input:active,
 .register-input:focus,
-.register-input:hover {
+.register-input:hover,
+.forgot-input:active,
+.forgot-input:focus,
+.forgot-input:hover,
+.reset-input:active,
+.reset-input:focus,
+.reset-input:hover {
 	outline: none;
 	border-bottom-color: #466EB4;
 }
 .login-submit,
-.register-submit {
+.register-submit,
+.forgot-submit,
+.reset-submit {
     background: #fff;
     font-size: 14px;
     margin-top: 30px;
@@ -107,7 +119,13 @@ body {
 .login-submit:hover,
 .register-submit:active,
 .register-submit:focus,
-.register-submit:hover {
+.register-submit:hover,
+.forgot-submit:active,
+.forgot-submit:focus,
+.forgot-submit:hover,
+.reset-submit:active,
+.reset-submit:focus,
+.reset-submit:hover {
 	border: 2px solid #466EB4;
 	outline: none;
     transform: scale(1.1);
@@ -144,8 +162,9 @@ body {
 }
 .option {
     position: absolute;
-    right: 20px;
-    bottom: 30px;
+    right: 18px;
+    bottom: 15px;
+    text-align: center;
 }
 .option a{
     text-decoration: none;
@@ -223,12 +242,13 @@ body {
     z-index: 4;
 }
 .screen-login.active ~ .overlay,
-.screen-register.active ~ .overlay {
+.screen-register.active ~ .overlay,
+.screen-password.active ~ .overlay,
+.screen-reset.active ~ .overlay {
     opacity: 1;
     pointer-events: auto;
 }
-.modal-login,
-.modal-error {
+.modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -239,8 +259,7 @@ body {
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
 }
-.modal-content-login,
-.modal-content-error {
+.modal-content {
     background-color: #fff;
     margin: 10% auto;
     padding: 30px;
@@ -262,18 +281,15 @@ body {
         transform: translateY(0);
     }
 }
-.modal-content-login h2,
-.modal-content-error h2 {
+.modal-content h2 {
     color: #466EB4;
     margin-bottom: 15px;
 }
-.modal-content-login p,
-.modal-content-error p {
+.modal-content p {
     color: #333;
     margin-bottom: 20px;
 }
-.modal-login button,
-.modal-error button {
+.modal-content button {
     background-color: #466EB4;
     color: #fff;
     padding: 10px 20px;
@@ -282,7 +298,6 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-.modal-login button:hover,
-.modal-error button:hover {
+.modal-content button:hover {
     background-color: #BEDBED;
 }

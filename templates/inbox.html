@@ -146,7 +146,6 @@
                             <td>{{ email.subject }}</td>
                             <td>{{ email.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <!-- Nội dung đã giải mã, giới hạn số từ -->
-                            <td>{{ email.decrypted_body | truncate(70) | e }}</td>
                             <td>
                                 {% if '----Forwarded message----' in email.decrypted_body %}
                                     {{ email.decrypted_body.split('----Forwarded message----')[0] | truncate(50) | e }}
