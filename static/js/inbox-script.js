@@ -885,3 +885,45 @@ socket.on('disconnect', function() {
 socket.on('connect', function() {
     console.log('WebSocket Connected');
 });
+
+
+document.querySelector('.form-recover-key').onsubmit = async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const response = await fetch('/change_password', {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('successChangePasswordMessage').textContent = result.message;
+        showChangePasswordSuccessModal();
+    } else {
+        document.getElementById('errorChangePasswordMessage').textContent = result.message;
+        showChangePasswordErrorModal();
+    }
+};
+
+// Hiển thị modal thành công
+function showChangePasswordSuccessModal() {
+    document.getElementById('changePasswordSuccessModal').classList.add('active');
+}
+
+// Đóng modal thành công
+function closeChangePasswordSuccessModal() {
+    document.getElementById('changePasswordSuccessModal').classList.remove('active');
+    document.querySelector('.form-recover-key').reset(); // Đặt lại form
+}
+
+// Hiển thị modal lỗi
+function showChangePasswordErrorModal() {
+    document.getElementById('changePasswordErrorModal').classList.add('active');
+}
+
+// Đóng modal lỗi
+function closeChangePasswordErrorModal() {
+    document.getElementById('changePasswordErrorModal').classList.remove('active');
+}

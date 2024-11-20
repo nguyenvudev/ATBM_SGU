@@ -301,3 +301,11 @@ body {
 .modal-content button:hover {
     background-color: #BEDBED;
 }
+.title-forgot {
+    color: #fff;
+    cursor: pointer;
+    margin-left: 40px;
+}
+.title-forgot:hover {
+    color: #466EB4;
+}

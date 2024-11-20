@@ -976,3 +976,60 @@ th {
         display: none;
     }
 }
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    width: auto;
+    height: 170px;
+    max-width: 500px;
+    text-align: center;
+    animation: fadeIn 0.3s;
+}
+/* Hiệu ứng fade-in cho modal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.modal-content h2 {
+    color: #466EB4;
+    margin-bottom: 15px;
+}
+.modal-content p {
+    color: #333;
+    margin-bottom: 20px;
+}
+.modal-content button {
+    background-color: #466EB4;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.modal-content button:hover {
+    background-color: #BEDBED;
+}

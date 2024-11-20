@@ -72,7 +72,7 @@
                 <!-- Account -->
                 <div class="account">
                     <div class="profile-details">
-                        <img src="{{ url_for('static', filename='img/OIP.jpg') }}" alt="profileImg">
+                        <img src="{{ url_for('static', filename='img/avt.webp') }}" alt="profileImg">
                     </div>
                     <form action="" class="form-account">
                         <div class="info">
@@ -81,7 +81,7 @@
                                 <input type="text" name="fullname" id="fullname" class="full-name" placeholder="Nguyễn Văn A" value="{{ session['username'] }}"  readonly />
                                 <input type="email" name="fullemail" id="fullemail" class="full-email" placeholder="abc@gmail.com" value="{{ session['email'] }}" readonly />
                             </div>
-                            <img src="{{ url_for('static', filename='img/OIP (1).jpg') }}" alt="profileImg">
+                            <img src="{{ url_for('static', filename='img/avt.webp') }}" alt="profileImg">
                         </div>
                         <div class="recover-key">
                             <button>Đổi mật khẩu</button>
@@ -115,6 +115,24 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Modal thành công -->
+            <div id="changePasswordSuccessModal" class="modal">
+                <div class="modal-content">
+                    <h2>Thành công!</h2>
+                    <p id="successChangePasswordMessage"></p>
+                    <button onclick="closeChangePasswordSuccessModal()">OK</button>
+                </div>
+            </div>
+
+            <!-- Modal lỗi -->
+            <div id="changePasswordErrorModal" class="modal">
+                <div class="modal-content">
+                    <h2>Lỗi!</h2>
+                    <p id="errorChangePasswordMessage"></p>
+                    <button onclick="closeChangePasswordErrorModal()">Đóng</button>
                 </div>
             </div>
 
